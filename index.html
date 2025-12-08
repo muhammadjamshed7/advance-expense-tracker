@@ -6,13 +6,12 @@
     <title>Advanced Finance Tracker & Control</title>
     
     <!-- Tailwind CSS -->
-    <!-- NOTE: The console warning about 'cdn.tailwindcss.com' is expected and safe for this standalone file. -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Tailwind Config for Custom Colors & Dark Mode -->
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable class-based dark mode
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -60,7 +59,6 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Dark mode scrollbar */
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
@@ -89,14 +87,12 @@
     <header class="bg-white dark:bg-dark-surface shadow-sm z-20 flex-none relative border-b dark:border-dark-border transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             
-            <!-- Left Side: Hamburger (Mobile) & Logo -->
+            <!-- Left Side: Hamburger & Logo -->
             <div class="flex items-center gap-3 md:gap-4">
-                <!-- Hamburger Button (Added explicit onclick for robustness) -->
                 <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-gray-600 dark:text-gray-300 text-xl p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition">
                     <i class="fas fa-bars"></i>
                 </button>
 
-                <!-- Logo -->
                 <div class="flex items-center gap-2">
                     <div class="bg-brand-700 text-white p-1.5 rounded-lg">
                         <i class="fas fa-wallet text-lg"></i>
@@ -107,21 +103,17 @@
 
             <!-- Right Side: Dark Toggle & Auth -->
             <div class="flex items-center gap-2 sm:gap-4">
-                
-                <!-- Dark Mode Toggle -->
                 <button onclick="toggleDarkMode()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-yellow-400 dark:hover:bg-gray-700 transition" title="Toggle Theme">
                     <i id="theme-icon" class="fas fa-moon text-lg"></i>
                 </button>
 
                 <div id="auth-section">
-                    <!-- Login Button -->
                     <button id="btn-login" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 transition shadow-sm">
                         <i class="fab fa-google text-red-500 text-base"></i> 
                         <span class="hidden sm:inline">Continue with Google</span>
                         <span class="sm:hidden">Login</span>
                     </button>
                     
-                    <!-- User Info -->
                     <div id="user-info" class="hidden flex items-center gap-2 sm:gap-3">
                         <div class="text-right hidden sm:block">
                             <p id="user-name" class="text-sm font-bold text-gray-900 dark:text-white leading-tight">User</p>
@@ -140,7 +132,7 @@
     </header>
 
     <div class="flex flex-1 overflow-hidden relative">
-        <!-- Sidebar Navigation (Desktop) -->
+        <!-- Sidebar Navigation -->
         <aside id="sidebar" class="bg-white dark:bg-dark-surface w-64 border-r border-gray-200 dark:border-dark-border hidden md:flex flex-col flex-none transition-all duration-300">
             <nav class="flex-1 p-4 space-y-1">
                 <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-brand-50 text-brand-700 dark:bg-gray-800 dark:text-brand-400">
@@ -167,7 +159,7 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg p-4 sm:p-8 relative w-full transition-colors duration-300">
             
-            <!-- Mobile Menu Overlay (Fixed & Responsive) -->
+            <!-- Mobile Menu Overlay -->
             <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-900/50 z-40 hidden transition-opacity backdrop-blur-sm" onclick="toggleMobileMenu()"></div>
             
             <div id="mobile-menu-sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-white dark:bg-dark-surface shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
@@ -301,7 +293,6 @@
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Expenses</h2>
                     <div class="flex items-center gap-3">
                         <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded font-bold uppercase">Debit</span>
-                        <!-- Close Button -->
                         <button onclick="router('dashboard')" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200 transition p-1" title="Close">
                             <i class="fas fa-times text-xl"></i>
                         </button>
@@ -332,7 +323,9 @@
                                 <option value="Utility Bills">Utility Bills</option>
                                 <option value="Transport">Transport</option>
                                 <option value="Miscellaneous">Miscellaneous</option>
+                                <option value="Custom">Custom / Other</option>
                             </select>
+                            <input type="text" id="exp-custom-category" placeholder="Enter Category Name" class="hidden mt-2 w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Subcategory</label>
@@ -587,22 +580,13 @@
             "Shopping": ["Clothing", "Electronics", "Gifts", "Custom"],
             "Utility Bills": ["Electricity", "Water", "Gas", "Internet"],
             "Transport": ["Fuel", "Public Transport", "Maintenance", "Ride Hailing"],
-            "Miscellaneous": ["Dining Out", "Entertainment", "Health", "Custom"]
+            "Miscellaneous": ["Dining Out", "Entertainment", "Health", "Custom"],
+            "Custom": []
         };
 
         // --- Authentication Logic ---
-        const initAuth = async () => {
-            try {
-                await signInAnonymously(auth);
-            } catch (err) {
-                console.warn("Auth initialization warning:", err.code);
-                if (err.code === 'auth/admin-restricted-operation') {
-                    showToast("Guest Mode", "Using Local Storage.", "info");
-                }
-            }
-        };
-        initAuth();
-
+        // Removed auto signInAnonymously call to adhere to "Unauthenticated = LocalStorage" requirement.
+        
         const btnLogin = document.getElementById('btn-login');
         const btnLogoutDesktop = document.getElementById('btn-logout-desktop');
         const btnLogoutMobile = document.getElementById('btn-logout-mobile');
@@ -625,12 +609,14 @@
         async function handleLogout() {
             if(confirm("Are you sure you want to logout?")) {
                 await signOut(auth);
-                // Immediately sign back in anonymously to keep app working for guest
-                try {
-                    await signInAnonymously(auth);
-                } catch(e) { console.warn("Re-auth failed", e); }
-                
+                // No auto re-login for guest. Just clear state.
+                currentUser = null;
                 transactions = [];
+                // Load local storage immediately
+                const raw = localStorage.getItem('financeData');
+                transactions = raw ? JSON.parse(raw) : [];
+                updateUI();
+                
                 // Close mobile menu if open
                 if (!document.getElementById('mobile-menu-overlay').classList.contains('hidden')) {
                     toggleMobileMenu();
@@ -642,34 +628,25 @@
         btnLogoutDesktop.addEventListener('click', handleLogout);
         btnLogoutMobile.addEventListener('click', handleLogout);
         
-        // Remove old listener if present (though this script runs fresh each time)
-        // document.getElementById('mobile-menu-btn').addEventListener('click', window.toggleMobileMenu); 
-        // Using explicit onclick in HTML is safer for this setup.
-
         // Auth State Listener
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             
             if (user) {
+                // AUTHENTICATED -> FIRESTORE
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('btn-login').classList.add('hidden');
                 
                 // Show Logout button in Mobile Menu
                 document.getElementById('mobile-logout-section').classList.remove('hidden');
                 
-                if (user.isAnonymous) {
-                    document.getElementById('user-name').textContent = "Guest";
-                    document.getElementById('user-status').innerHTML = '<i class="fas fa-cloud"></i> DB Active';
-                    document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=Guest&background=0F766E&color=fff`;
-                } else {
-                    document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || "User";
-                    document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google';
-                    document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=0F766E&color=fff`;
-                }
+                document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || "User";
+                document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google';
+                document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=0F766E&color=fff`;
 
                 subscribeToCloudData(user.uid);
             } else {
-                // Fallback to purely Local Storage Guest Mode
+                // UNAUTHENTICATED (GUEST) -> LOCAL STORAGE
                 document.getElementById('user-info').classList.add('hidden');
                 document.getElementById('btn-login').classList.remove('hidden');
                 document.getElementById('mobile-logout-section').classList.add('hidden');
@@ -704,6 +681,7 @@
 
         async function addTransaction(data) {
             if (currentUser) {
+                // Firestore
                 try {
                     const ref = collection(db, 'users', currentUser.uid, 'transactions');
                     delete data.id; 
@@ -711,12 +689,10 @@
                     showToast("Saved", "Saved to Database.");
                 } catch (e) {
                     console.error(e);
-                    // Fallback UI update
-                    data.id = "temp_" + Date.now();
-                    transactions.push(data);
-                    updateUI();
+                    showToast("Error", "Failed to save to cloud.", "error");
                 }
             } else {
+                // Local Storage
                 data.id = crypto.randomUUID();
                 transactions.push(data);
                 localStorage.setItem('financeData', JSON.stringify(transactions));
@@ -728,6 +704,7 @@
         async function deleteTransaction(id) {
             if (confirm("Delete this transaction?")) {
                 if (currentUser) {
+                    // Firestore
                     try {
                         await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
                         showToast("Deleted", "Removed from Database.");
@@ -735,6 +712,7 @@
                         showToast("Error", "Failed to delete.", "error");
                     }
                 } else {
+                    // Local Storage
                     transactions = transactions.filter(t => t.id !== id);
                     localStorage.setItem('financeData', JSON.stringify(transactions));
                     updateUI();
@@ -978,27 +956,53 @@
         
         catSelect.addEventListener('change', (e) => {
             const main = e.target.value;
-            const subs = CATEGORIES[main];
-            let html = `<select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
-            subs.forEach(s => html += `<option value="${s}">${s}</option>`);
-            html += `</select>`;
-            subContainer.innerHTML = html;
+            const customInput = document.getElementById('exp-custom-category');
+            
+            if (main === 'Custom') {
+                customInput.classList.remove('hidden');
+                customInput.required = true;
+                // Switch subcategory to text input
+                subContainer.innerHTML = `<input type="text" id="exp-subcategory" placeholder="Subcategory (Optional)" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
+            } else {
+                customInput.classList.add('hidden');
+                customInput.required = false;
+                // Revert to dropdown
+                const subs = CATEGORIES[main];
+                let html = `<select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
+                if(subs) {
+                    subs.forEach(s => html += `<option value="${s}">${s}</option>`);
+                }
+                html += `</select>`;
+                subContainer.innerHTML = html;
+            }
         });
 
         document.getElementById('expense-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const catSelectVal = document.getElementById('exp-category').value;
+            let finalCategory = catSelectVal;
+            
+            if (catSelectVal === 'Custom') {
+                finalCategory = document.getElementById('exp-custom-category').value;
+            }
+
             const subVal = document.getElementById('exp-subcategory').value || "General";
+            
             const data = {
                 type: 'expense',
                 date: document.getElementById('exp-date').value,
                 amount: parseFloat(document.getElementById('exp-amount').value),
-                category: document.getElementById('exp-category').value,
+                category: finalCategory,
                 subcategory: subVal,
                 description: document.getElementById('exp-desc').value,
                 timestamp: Date.now()
             };
             await addTransaction(data);
             e.target.reset();
+            
+            // Reset UI state for custom input
+            document.getElementById('exp-custom-category').classList.add('hidden');
             document.getElementById('exp-date').valueAsDate = new Date();
             renderLists();
         });
