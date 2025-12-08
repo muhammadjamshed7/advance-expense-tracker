@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +8,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Tailwind Config for Custom Colors -->
+    <!-- Tailwind Config for Custom Colors & Dark Mode -->
     <script>
         tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
             theme: {
                 extend: {
                     colors: {
@@ -26,6 +27,13 @@
                         accent: {
                             400: '#fbbf24', // Goldish
                             500: '#f59e0b',
+                        },
+                        dark: {
+                            bg: '#111827',
+                            surface: '#1f2937',
+                            border: '#374151',
+                            text: '#f3f4f6',
+                            muted: '#9ca3af'
                         }
                     }
                 }
@@ -47,33 +55,43 @@
     <style>
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Slide Transition for Mobile Menu */
+        .slide-enter { transform: translateX(-100%); }
+        .slide-enter-active { transform: translateX(0); transition: transform 0.3s ease-out; }
+        .slide-exit { transform: translateX(0); }
+        .slide-exit-active { transform: translateX(-100%); transition: transform 0.3s ease-in; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 bg-white border-l-4 shadow-lg rounded p-4 flex items-center gap-3">
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 bg-white dark:bg-gray-800 border-l-4 shadow-lg rounded p-4 flex items-center gap-3">
         <i id="toast-icon" class="fas fa-check-circle text-green-500"></i>
         <div>
-            <h4 id="toast-title" class="font-bold text-sm">Success</h4>
-            <p id="toast-msg" class="text-xs text-gray-600">Action completed.</p>
+            <h4 id="toast-title" class="font-bold text-sm dark:text-white">Success</h4>
+            <p id="toast-msg" class="text-xs text-gray-600 dark:text-gray-300">Action completed.</p>
         </div>
     </div>
 
     <!-- Header -->
-    <header class="bg-white shadow-sm z-20 flex-none relative">
+    <header class="bg-white dark:bg-dark-surface shadow-sm z-20 flex-none relative border-b dark:border-dark-border transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             
             <!-- Left Side: Hamburger (Mobile) & Logo -->
             <div class="flex items-center gap-3 md:gap-4">
-                <!-- Hamburger Button (Moved to Left as requested) -->
-                <button id="mobile-menu-btn" class="md:hidden text-gray-600 text-xl p-2 rounded-md hover:bg-gray-100 focus:outline-none">
+                <!-- Hamburger Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-600 dark:text-gray-300 text-xl p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition">
                     <i class="fas fa-bars"></i>
                 </button>
 
@@ -82,32 +100,35 @@
                     <div class="bg-brand-700 text-white p-1.5 rounded-lg">
                         <i class="fas fa-wallet text-lg"></i>
                     </div>
-                    <h1 class="text-lg sm:text-xl font-bold text-brand-900 tracking-tight">AFTC</h1>
+                    <h1 class="text-lg sm:text-xl font-bold text-brand-900 dark:text-white tracking-tight">AFTC</h1>
                 </div>
             </div>
 
-            <!-- Right Side: Auth / Profile -->
-            <div class="flex items-center gap-2">
+            <!-- Right Side: Dark Toggle & Auth -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-yellow-400 dark:hover:bg-gray-700 transition" title="Toggle Theme">
+                    <i id="theme-icon" class="fas fa-moon text-lg"></i>
+                </button>
+
                 <div id="auth-section">
-                    <!-- Login Button: Text hidden on small mobile to save space -->
-                    <button id="btn-login" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 transition shadow-sm">
+                    <!-- Login Button -->
+                    <button id="btn-login" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 transition shadow-sm">
                         <i class="fab fa-google text-red-500 text-base"></i> 
                         <span class="hidden sm:inline">Continue with Google</span>
                         <span class="sm:hidden">Login</span>
                     </button>
                     
-                    <!-- User Info: Simplified for header -->
+                    <!-- User Info -->
                     <div id="user-info" class="hidden flex items-center gap-2 sm:gap-3">
                         <div class="text-right hidden sm:block">
-                            <p id="user-name" class="text-sm font-bold text-gray-900 leading-tight">User</p>
-                            <p id="user-status" class="text-[10px] text-green-600 flex items-center justify-end gap-1 font-medium">
+                            <p id="user-name" class="text-sm font-bold text-gray-900 dark:text-white leading-tight">User</p>
+                            <p id="user-status" class="text-[10px] text-green-600 dark:text-green-400 flex items-center justify-end gap-1 font-medium">
                                 <i class="fas fa-cloud"></i> Synced
                             </p>
                         </div>
-                        <!-- Avatar -->
-                        <img id="user-avatar" src="" class="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-brand-100 shadow-sm">
-                        
-                        <!-- NOTE: Logout button removed from here on mobile to prevent accidental touches -->
+                        <img id="user-avatar" src="" class="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-brand-100 dark:border-brand-900 shadow-sm">
                         <button id="btn-logout-desktop" class="hidden md:block text-gray-400 hover:text-red-500 ml-2 transition" title="Logout">
                             <i class="fas fa-sign-out-alt text-lg"></i>
                         </button>
@@ -119,114 +140,109 @@
 
     <div class="flex flex-1 overflow-hidden relative">
         <!-- Sidebar Navigation (Desktop) -->
-        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 hidden md:flex flex-col flex-none transition-all">
+        <aside id="sidebar" class="bg-white dark:bg-dark-surface w-64 border-r border-gray-200 dark:border-dark-border hidden md:flex flex-col flex-none transition-all duration-300">
             <nav class="flex-1 p-4 space-y-1">
-                <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-brand-50 text-brand-700">
+                <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-brand-50 text-brand-700 dark:bg-gray-800 dark:text-brand-400">
                     <i class="fas fa-chart-pie w-5"></i> Dashboard
                 </button>
-                <button onclick="router('expenses')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+                <button onclick="router('expenses')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
                     <i class="fas fa-minus-circle w-5 text-red-400"></i> Expenses
                 </button>
-                <button onclick="router('income')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+                <button onclick="router('income')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
                     <i class="fas fa-plus-circle w-5 text-green-400"></i> Income
                 </button>
-                <button onclick="router('export')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+                <button onclick="router('export')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
                     <i class="fas fa-file-export w-5 text-blue-400"></i> Export & Data
                 </button>
             </nav>
-            <div class="p-4 border-t border-gray-100">
-                <div class="bg-brand-50 p-4 rounded-xl">
-                    <p class="text-xs text-brand-600 font-semibold mb-1">Current Balance</p>
-                    <h3 id="sidebar-balance" class="text-xl font-bold text-brand-800">$0.00</h3>
+            <div class="p-4 border-t border-gray-100 dark:border-dark-border">
+                <div class="bg-brand-50 dark:bg-gray-800 p-4 rounded-xl">
+                    <p class="text-xs text-brand-600 dark:text-brand-400 font-semibold mb-1">Current Balance</p>
+                    <h3 id="sidebar-balance" class="text-xl font-bold text-brand-800 dark:text-white">$0.00</h3>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-8 relative w-full">
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg p-4 sm:p-8 relative w-full transition-colors duration-300">
             
-            <!-- Mobile Menu Overlay (Improved Design) -->
-            <div id="mobile-menu" class="absolute inset-0 bg-gray-800/50 z-30 hidden md:hidden transition-opacity">
-                <!-- Menu Content -->
-                <div class="bg-white w-64 h-full shadow-xl flex flex-col animate-slideRight">
-                    <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                        <span class="font-bold text-brand-800 text-lg">Menu</span>
-                        <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-gray-800">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    
-                    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                        <button onclick="router('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
-                        </button>
-                        <button onclick="router('expenses'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <i class="fas fa-minus-circle w-5 text-center text-red-400"></i> Expenses
-                        </button>
-                        <button onclick="router('income'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <i class="fas fa-plus-circle w-5 text-center text-green-400"></i> Income
-                        </button>
-                        <button onclick="router('export'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <i class="fas fa-file-export w-5 text-center text-blue-400"></i> Export
-                        </button>
-                    </nav>
+            <!-- Mobile Menu Overlay (Fixed & Responsive) -->
+            <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-900/50 z-40 hidden transition-opacity backdrop-blur-sm" onclick="toggleMobileMenu()"></div>
+            
+            <div id="mobile-menu-sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-white dark:bg-dark-surface shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+                <div class="p-5 border-b border-gray-100 dark:border-dark-border flex items-center justify-between bg-gray-50 dark:bg-gray-800">
+                    <span class="font-bold text-brand-800 dark:text-white text-lg">Menu</span>
+                    <button onclick="toggleMobileMenu()" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                    <button onclick="router('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
+                        <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+                    </button>
+                    <button onclick="router('expenses'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
+                        <i class="fas fa-minus-circle w-5 text-center text-red-400"></i> Expenses
+                    </button>
+                    <button onclick="router('income'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
+                        <i class="fas fa-plus-circle w-5 text-center text-green-400"></i> Income
+                    </button>
+                    <button onclick="router('export'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
+                        <i class="fas fa-file-export w-5 text-center text-blue-400"></i> Export
+                    </button>
+                </nav>
 
-                    <!-- LOGOUT BUTTON IN HAMBURGER MENU (For Safety) -->
-                    <div id="mobile-logout-section" class="p-4 border-t border-gray-200 bg-gray-50 hidden">
-                        <button id="btn-logout-mobile" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-600 font-medium hover:bg-red-100 transition">
-                            <i class="fas fa-sign-out-alt"></i> Logout Securely
-                        </button>
-                    </div>
+                <div id="mobile-logout-section" class="p-4 border-t border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-gray-800 hidden">
+                    <button id="btn-logout-mobile" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
                 </div>
             </div>
 
             <!-- VIEW: DASHBOARD -->
             <div id="view-dashboard" class="fade-in space-y-6">
                 <!-- Date Controller -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-2 flex items-center justify-between max-w-md mx-auto sm:mx-0">
-                    <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                <div class="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-2 flex items-center justify-between max-w-md mx-auto sm:mx-0">
+                    <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                     <div class="text-center">
-                        <span id="current-month-display" class="block font-bold text-gray-800 text-sm sm:text-base">Loading...</span>
+                        <span id="current-month-display" class="block font-bold text-gray-800 dark:text-white text-sm sm:text-base">Loading...</span>
                     </div>
-                    <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                    <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
 
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                    <!-- Income Card -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
                         <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Income</span>
-                            <h3 id="dash-income" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
-                            <div class="absolute top-4 right-4 bg-green-50 p-2 rounded-full text-green-500">
+                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Income</span>
+                            <h3 id="dash-income" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
+                            <div class="absolute top-4 right-4 bg-green-50 dark:bg-green-900/20 p-2 rounded-full text-green-500">
                                 <i class="fas fa-arrow-down transform rotate-45"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Expense Card -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
                         <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Expenses</span>
-                            <h3 id="dash-expense" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
-                            <p id="dash-expense-count" class="text-[10px] text-gray-400 mt-1">0 transactions</p>
-                            <div class="absolute top-4 right-4 bg-red-50 p-2 rounded-full text-red-500">
+                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Expenses</span>
+                            <h3 id="dash-expense" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
+                            <p id="dash-expense-count" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">0 transactions</p>
+                            <div class="absolute top-4 right-4 bg-red-50 dark:bg-red-900/20 p-2 rounded-full text-red-500">
                                 <i class="fas fa-arrow-up transform rotate-45"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Balance Card -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
                         <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Balance</span>
-                            <h3 id="dash-balance" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
+                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Balance</span>
+                            <h3 id="dash-balance" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
                             <p id="dash-insight" class="text-[11px] mt-1 font-medium">Analyzing...</p>
-                            <div class="absolute top-4 right-4 bg-blue-50 p-2 rounded-full text-blue-500">
+                            <div class="absolute top-4 right-4 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-full text-blue-500">
                                 <i class="fas fa-wallet"></i>
                             </div>
                         </div>
@@ -235,14 +251,14 @@
 
                 <!-- Charts Area -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-                        <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase">Spending Trend</h3>
+                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border lg:col-span-2">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Spending Trend</h3>
                         <div class="h-60 relative w-full">
                             <canvas id="barChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase">Categories</h3>
+                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Categories</h3>
                         <div class="h-60 relative w-full flex justify-center">
                             <canvas id="doughnutChart"></canvas>
                         </div>
@@ -250,21 +266,21 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                        <h3 class="font-bold text-gray-800 text-sm uppercase">Recent Activity</h3>
-                        <button onclick="router('expenses')" class="text-xs font-bold text-brand-600 hover:text-brand-700 uppercase tracking-wide">View All</button>
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">Recent Activity</h3>
+                        <button onclick="router('expenses')" class="text-xs font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 uppercase tracking-wide">View All</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase">
                                 <tr>
                                     <th class="px-6 py-3 font-semibold">Date</th>
                                     <th class="px-6 py-3 font-semibold">Category</th>
                                     <th class="px-6 py-3 font-semibold text-right">Amount</th>
                                 </tr>
                             </thead>
-                            <tbody id="recent-transactions-list" class="divide-y divide-gray-100">
+                            <tbody id="recent-transactions-list" class="divide-y divide-gray-100 dark:divide-gray-700">
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
@@ -275,26 +291,26 @@
             <!-- VIEW: EXPENSES -->
             <div id="view-expenses" class="hidden fade-in max-w-3xl mx-auto space-y-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-900">Expenses</h2>
-                    <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold uppercase">Debit</span>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Expenses</h2>
+                    <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded font-bold uppercase">Debit</span>
                 </div>
                 
-                <form id="expense-form" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                <form id="expense-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
-                            <input type="date" id="exp-date" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Date</label>
+                            <input type="date" id="exp-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount</label>
-                            <input type="number" id="exp-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Amount</label>
+                            <input type="number" id="exp-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
-                            <select id="exp-category" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Category</label>
+                            <select id="exp-category" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                                 <option value="" disabled selected>Select Category</option>
                                 <option value="Mobile Package">Mobile Package</option>
                                 <option value="Family Payments">Family Payments</option>
@@ -306,9 +322,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subcategory</label>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Subcategory</label>
                             <div id="subcategory-container">
-                                <select id="exp-subcategory" class="w-full bg-gray-50 border-gray-200 rounded-lg border p-2.5 outline-none text-gray-400" disabled>
+                                <select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg border p-2.5 outline-none text-gray-400 dark:text-gray-500" disabled>
                                     <option>Select Main Category</option>
                                 </select>
                             </div>
@@ -316,24 +332,57 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Note</label>
-                        <input type="text" id="exp-desc" placeholder="Optional description..." class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Note</label>
+                        <input type="text" id="exp-desc" placeholder="Optional description..." class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition shadow-lg shadow-brand-200">
+                        <button type="submit" class="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition shadow-lg shadow-brand-200 dark:shadow-none">
                             Save Expense
                         </button>
                     </div>
                 </form>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                        <h3 class="font-bold text-gray-800 text-sm uppercase">History</h3>
+                <!-- Filter Toggle Section -->
+                <div class="space-y-4">
+                    <button onclick="toggleFilters('expense')" class="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        <span class="flex items-center gap-2"><i class="fas fa-filter text-brand-500"></i> Filter & Search</span>
+                        <i id="expense-filter-icon" class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    
+                    <div id="expense-filter-panel" class="hidden bg-white dark:bg-dark-surface p-5 rounded-xl shadow-inner border border-gray-100 dark:border-dark-border space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                                <select id="filter-exp-cat" onchange="applyFilters('expense')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
+                                    <option value="All">All Categories</option>
+                                    <option value="Mobile Package">Mobile Package</option>
+                                    <option value="Family Payments">Family Payments</option>
+                                    <option value="Grocery">Grocery</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Utility Bills">Utility Bills</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Miscellaneous">Miscellaneous</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Date</label>
+                                <input type="date" id="filter-exp-date" onchange="applyFilters('expense')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="clearFilters('expense')" class="text-xs text-red-500 hover:text-red-600 font-bold uppercase">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">History</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 text-gray-500">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                                 <tr>
                                     <th class="px-6 py-3 font-medium">Date</th>
                                     <th class="px-6 py-3 font-medium">Details</th>
@@ -341,7 +390,7 @@
                                     <th class="px-6 py-3 font-medium text-center"></th>
                                 </tr>
                             </thead>
-                            <tbody id="expense-list-table" class="divide-y divide-gray-100">
+                            <tbody id="expense-list-table" class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
@@ -352,25 +401,25 @@
             <!-- VIEW: INCOME -->
             <div id="view-income" class="hidden fade-in max-w-3xl mx-auto space-y-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-900">Income</h2>
-                    <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded font-bold uppercase">Credit</span>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Income</h2>
+                    <span class="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded font-bold uppercase">Credit</span>
                 </div>
                 
-                <form id="income-form" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                <form id="income-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
-                            <input type="date" id="inc-date" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Date</label>
+                            <input type="date" id="inc-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount</label>
-                            <input type="number" id="inc-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Amount</label>
+                            <input type="number" id="inc-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Source</label>
-                        <select id="inc-source" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Source</label>
+                        <select id="inc-source" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                             <option value="" disabled selected>Select Source</option>
                             <option value="Salary">Salary</option>
                             <option value="Freelance">Freelance</option>
@@ -381,24 +430,55 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Note</label>
-                        <input type="text" id="inc-note" placeholder="Optional note..." class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Note</label>
+                        <input type="text" id="inc-note" placeholder="Optional note..." class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200">
+                        <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200 dark:shadow-none">
                             Save Income
                         </button>
                     </div>
                 </form>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                        <h3 class="font-bold text-gray-800 text-sm uppercase">History</h3>
+                <!-- Filter Toggle Section (Income) -->
+                <div class="space-y-4">
+                    <button onclick="toggleFilters('income')" class="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        <span class="flex items-center gap-2"><i class="fas fa-filter text-green-500"></i> Filter & Search</span>
+                        <i id="income-filter-icon" class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    
+                    <div id="income-filter-panel" class="hidden bg-white dark:bg-dark-surface p-5 rounded-xl shadow-inner border border-gray-100 dark:border-dark-border space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Source</label>
+                                <select id="filter-inc-source" onchange="applyFilters('income')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
+                                    <option value="All">All Sources</option>
+                                    <option value="Salary">Salary</option>
+                                    <option value="Freelance">Freelance</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Gift">Gift</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Date</label>
+                                <input type="date" id="filter-inc-date" onchange="applyFilters('income')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="clearFilters('income')" class="text-xs text-red-500 hover:text-red-600 font-bold uppercase">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">History</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 text-gray-500">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                                 <tr>
                                     <th class="px-6 py-3 font-medium">Date</th>
                                     <th class="px-6 py-3 font-medium">Source</th>
@@ -406,7 +486,7 @@
                                     <th class="px-6 py-3 font-medium text-center"></th>
                                 </tr>
                             </thead>
-                            <tbody id="income-list-table" class="divide-y divide-gray-100">
+                            <tbody id="income-list-table" class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
@@ -416,29 +496,29 @@
 
             <!-- VIEW: EXPORT & SETTINGS -->
             <div id="view-export" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <h2 class="text-2xl font-bold text-gray-900">Export & Data</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Export & Data</h2>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4">Export Reports</h3>
-                    <p class="text-sm text-gray-500 mb-6">Download your financial data locally.</p>
+                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border">
+                    <h3 class="font-bold text-gray-800 dark:text-white mb-4">Export Reports</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Download your financial data locally.</p>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <button onclick="exportData('pdf')" class="flex items-center justify-center gap-3 p-4 border border-red-100 bg-red-50/50 rounded-xl hover:bg-red-50 transition text-red-700 font-medium">
+                        <button onclick="exportData('pdf')" class="flex items-center justify-center gap-3 p-4 border border-red-100 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/20 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/40 transition text-red-700 dark:text-red-400 font-medium">
                             <i class="fas fa-file-pdf text-xl"></i> PDF
                         </button>
-                        <button onclick="exportData('csv')" class="flex items-center justify-center gap-3 p-4 border border-green-100 bg-green-50/50 rounded-xl hover:bg-green-50 transition text-green-700 font-medium">
+                        <button onclick="exportData('csv')" class="flex items-center justify-center gap-3 p-4 border border-green-100 dark:border-green-900/50 bg-green-50/50 dark:bg-green-900/20 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/40 transition text-green-700 dark:text-green-400 font-medium">
                             <i class="fas fa-file-csv text-xl"></i> CSV
                         </button>
-                        <button onclick="exportData('excel')" class="flex items-center justify-center gap-3 p-4 border border-blue-100 bg-blue-50/50 rounded-xl hover:bg-blue-50 transition text-blue-700 font-medium">
+                        <button onclick="exportData('excel')" class="flex items-center justify-center gap-3 p-4 border border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/40 transition text-blue-700 dark:text-blue-400 font-medium">
                             <i class="fas fa-file-excel text-xl"></i> Excel
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100">
-                    <h3 class="font-bold text-red-600 mb-2">Danger Zone</h3>
-                    <p class="text-sm text-gray-500 mb-4">Resetting data will clear everything from your local storage.</p>
-                    <button onclick="resetAllData()" class="bg-white text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition text-sm font-bold w-full sm:w-auto">
+                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-red-100 dark:border-red-900/50">
+                    <h3 class="font-bold text-red-600 dark:text-red-400 mb-2">Danger Zone</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Resetting data will clear everything from your local storage.</p>
+                    <button onclick="resetAllData()" class="bg-white dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm font-bold w-full sm:w-auto">
                         Reset All Data
                     </button>
                 </div>
@@ -475,6 +555,10 @@
         let transactions = []; // Main in-memory data store
         let currentMonth = new Date();
         let charts = { bar: null, doughnut: null };
+        let activeFilters = {
+            expense: { category: 'All', date: '' },
+            income: { source: 'All', date: '' }
+        };
 
         // --- Category Map ---
         const CATEGORIES = {
@@ -490,7 +574,6 @@
         // --- Authentication Logic ---
         const initAuth = async () => {
             try {
-                // Try anonymous auth. If it fails (admin restricted), catch it.
                 await signInAnonymously(auth);
             } catch (err) {
                 console.warn("Auth initialization warning:", err.code);
@@ -505,7 +588,6 @@
         const btnLogoutDesktop = document.getElementById('btn-logout-desktop');
         const btnLogoutMobile = document.getElementById('btn-logout-mobile');
 
-        // Handle Login (Upgrade from Anonymous to Google)
         btnLogin.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
@@ -523,15 +605,10 @@
         async function handleLogout() {
             if(confirm("Are you sure you want to logout?")) {
                 await signOut(auth);
-                // Immediately sign back in anonymously to keep app working for guest
-                try {
-                    await signInAnonymously(auth);
-                } catch(e) { console.warn("Re-auth failed", e); }
-                
+                try { await signInAnonymously(auth); } catch(e) { console.warn("Re-auth failed", e); }
                 transactions = [];
                 // Close mobile menu if open
-                const menu = document.getElementById('mobile-menu');
-                if(!menu.classList.contains('hidden')) {
+                if (!document.getElementById('mobile-menu-overlay').classList.contains('hidden')) {
                     toggleMobileMenu();
                 }
                 showToast("Logged Out", "Reverted to Guest Mode.");
@@ -540,18 +617,14 @@
 
         btnLogoutDesktop.addEventListener('click', handleLogout);
         btnLogoutMobile.addEventListener('click', handleLogout);
-        // Added the listener for the mobile menu toggle button here
         document.getElementById('mobile-menu-btn').addEventListener('click', window.toggleMobileMenu);
 
         // Auth State Listener
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            
             if (user) {
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('btn-login').classList.add('hidden');
-                
-                // Show Logout button in Mobile Menu
                 document.getElementById('mobile-logout-section').classList.remove('hidden');
                 
                 if (user.isAnonymous) {
@@ -563,16 +636,12 @@
                     document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google';
                     document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=0F766E&color=fff`;
                 }
-
                 subscribeToCloudData(user.uid);
             } else {
-                // Fallback to purely Local Storage Guest Mode
                 document.getElementById('user-info').classList.add('hidden');
                 document.getElementById('btn-login').classList.remove('hidden');
                 document.getElementById('mobile-logout-section').classList.add('hidden');
-                
                 if (unsubscribeFirestore) unsubscribeFirestore();
-                
                 const raw = localStorage.getItem('financeData');
                 transactions = raw ? JSON.parse(raw) : [];
                 updateUI();
@@ -584,9 +653,7 @@
 
         function subscribeToCloudData(userId) {
             if (unsubscribeFirestore) unsubscribeFirestore();
-
             const q = query(collection(db, 'users', userId, 'transactions'));
-            
             unsubscribeFirestore = onSnapshot(q, (snapshot) => {
                 const cloudData = [];
                 snapshot.forEach((doc) => {
@@ -608,7 +675,6 @@
                     showToast("Saved", "Saved to Database.");
                 } catch (e) {
                     console.error(e);
-                    // Fallback UI update
                     data.id = "temp_" + Date.now();
                     transactions.push(data);
                     updateUI();
@@ -640,6 +706,72 @@
             }
         }
 
+        // --- Dark Mode Logic ---
+        window.toggleDarkMode = function() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+            updateChartsTheme();
+        }
+
+        // Init Theme
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+        }
+
+        function updateChartsTheme() {
+            if(charts.bar || charts.doughnut) {
+                // Re-render dashboard to update chart colors
+                if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
+            }
+        }
+
+        // --- Filter Logic ---
+        window.toggleFilters = function(type) {
+            const panel = document.getElementById(`${type}-filter-panel`);
+            const icon = document.getElementById(`${type}-filter-icon`);
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                panel.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        window.applyFilters = function(type) {
+            if (type === 'expense') {
+                activeFilters.expense.category = document.getElementById('filter-exp-cat').value;
+                activeFilters.expense.date = document.getElementById('filter-exp-date').value;
+            } else {
+                activeFilters.income.source = document.getElementById('filter-inc-source').value;
+                activeFilters.income.date = document.getElementById('filter-inc-date').value;
+            }
+            renderLists();
+        }
+
+        window.clearFilters = function(type) {
+            if (type === 'expense') {
+                document.getElementById('filter-exp-cat').value = 'All';
+                document.getElementById('filter-exp-date').value = '';
+                activeFilters.expense = { category: 'All', date: '' };
+            } else {
+                document.getElementById('filter-inc-source').value = 'All';
+                document.getElementById('filter-inc-date').value = '';
+                activeFilters.income = { source: 'All', date: '' };
+            }
+            renderLists();
+        }
+
         // --- UI Logic & Routing ---
         window.router = function(viewName) {
             ['dashboard', 'expenses', 'income', 'export'].forEach(v => {
@@ -647,21 +779,31 @@
             });
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             if (viewName === 'dashboard') renderDashboard();
+            
+            // Close mobile menu if moving
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if(!overlay.classList.contains('hidden')) toggleMobileMenu();
         }
 
+        // Improved Mobile Menu Toggle
         window.toggleMobileMenu = function() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                // Allow animation
+            const overlay = document.getElementById('mobile-menu-overlay');
+            const sidebar = document.getElementById('mobile-menu-sidebar');
+            
+            if (overlay.classList.contains('hidden')) {
+                // Open
+                overlay.classList.remove('hidden');
+                sidebar.classList.remove('-translate-x-full');
             } else {
-                menu.classList.add('hidden');
+                // Close
+                overlay.classList.add('hidden');
+                sidebar.classList.add('-translate-x-full');
             }
         }
 
         function updateUI() {
             if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
-            renderLists(); // Always update lists for background views
+            renderLists();
         }
 
         // --- Dashboard & Charts ---
@@ -717,12 +859,12 @@
             const sorted = [...monthData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
             const listEl = document.getElementById('recent-transactions-list');
             listEl.innerHTML = sorted.map(t => `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="px-6 py-4 text-gray-600">${t.date}</td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
+                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">${t.date}</td>
                     <td class="px-6 py-4">
-                        <span class="font-medium text-gray-900">${t.type === 'income' ? t.source : t.category}</span>
+                        <span class="font-medium text-gray-900 dark:text-white">${t.type === 'income' ? t.source : t.category}</span>
                     </td>
-                    <td class="px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                    <td class="px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
                         ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
                     </td>
                 </tr>
@@ -733,10 +875,14 @@
             if (charts.bar) charts.bar.destroy();
             if (charts.doughnut) charts.doughnut.destroy();
 
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e5e7eb' : '#374151';
+
             const catLabels = Object.keys(categoryData);
             const catValues = Object.values(categoryData);
             const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899', '#8b5cf6', '#ef4444'];
 
+            // Doughnut
             const ctxD = document.getElementById('doughnutChart').getContext('2d');
             charts.doughnut = new Chart(ctxD, {
                 type: 'doughnut',
@@ -751,10 +897,15 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        } 
+                    }
                 }
             });
 
+            // Bar
             const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
             const days = Array.from({length: daysInMonth}, (_, i) => i + 1);
             const dailyExp = new Array(daysInMonth).fill(0);
@@ -783,7 +934,13 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: { display: false },
-                        x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: textColor,
+                                font: { size: 8 } 
+                            } 
+                        }
                     },
                     plugins: { legend: { display: false } }
                 }
@@ -797,7 +954,7 @@
         catSelect.addEventListener('change', (e) => {
             const main = e.target.value;
             const subs = CATEGORIES[main];
-            let html = `<select id="exp-subcategory" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">`;
+            let html = `<select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
             subs.forEach(s => html += `<option value="${s}">${s}</option>`);
             html += `</select>`;
             subContainer.innerHTML = html;
@@ -838,23 +995,33 @@
         });
 
         window.renderLists = function() {
+            // Apply filtering logic
             const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
             const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
             
-            const monthData = transactions.filter(t => {
+            // Base filter by current month view
+            let filtered = transactions.filter(t => {
                 const tDate = new Date(t.date);
                 return tDate >= start && tDate <= end;
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
+            // Apply manual toggled filters
             const expList = document.getElementById('expense-list-table');
-            expList.innerHTML = monthData.filter(t => t.type === 'expense').map(t => `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
+            const expFiltered = filtered.filter(t => {
+                if (t.type !== 'expense') return false;
+                if (activeFilters.expense.category !== 'All' && t.category !== activeFilters.expense.category) return false;
+                if (activeFilters.expense.date && t.date !== activeFilters.expense.date) return false;
+                return true;
+            });
+
+            expList.innerHTML = expFiltered.map(t => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
                     <td class="px-6 py-4">${t.date}</td>
                     <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">${t.category}</div>
-                        <div class="text-xs text-gray-500">${t.subcategory}</div>
+                        <div class="font-medium text-gray-900 dark:text-white">${t.category}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">${t.subcategory}</div>
                     </td>
-                    <td class="px-6 py-4 text-right font-bold text-gray-700">$${parseFloat(t.amount).toFixed(2)}</td>
+                    <td class="px-6 py-4 text-right font-bold text-gray-700 dark:text-gray-200">$${parseFloat(t.amount).toFixed(2)}</td>
                     <td class="px-6 py-4 text-center">
                         <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
                     </td>
@@ -862,13 +1029,20 @@
             `).join('');
 
             const incList = document.getElementById('income-list-table');
-            incList.innerHTML = monthData.filter(t => t.type === 'income').map(t => `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
+            const incFiltered = filtered.filter(t => {
+                if (t.type !== 'income') return false;
+                if (activeFilters.income.source !== 'All' && t.source !== activeFilters.income.source) return false;
+                if (activeFilters.income.date && t.date !== activeFilters.income.date) return false;
+                return true;
+            });
+
+            incList.innerHTML = incFiltered.map(t => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
                     <td class="px-6 py-4">${t.date}</td>
                     <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">${t.source}</div>
+                        <div class="font-medium text-gray-900 dark:text-white">${t.source}</div>
                     </td>
-                    <td class="px-6 py-4 text-right font-bold text-green-600">$${parseFloat(t.amount).toFixed(2)}</td>
+                    <td class="px-6 py-4 text-right font-bold text-green-600 dark:text-green-400">$${parseFloat(t.amount).toFixed(2)}</td>
                     <td class="px-6 py-4 text-center">
                         <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
                     </td>
@@ -926,3 +1100,5 @@
         renderDashboard();
 
     </script>
+</body>
+</html>
