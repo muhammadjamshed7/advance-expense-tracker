@@ -540,6 +540,8 @@
 
         btnLogoutDesktop.addEventListener('click', handleLogout);
         btnLogoutMobile.addEventListener('click', handleLogout);
+        // Added the listener for the mobile menu toggle button here
+        document.getElementById('mobile-menu-btn').addEventListener('click', window.toggleMobileMenu);
 
         // Auth State Listener
         onAuthStateChanged(auth, async (user) => {
@@ -924,5 +926,3 @@
         renderDashboard();
 
     </script>
-</body>
-</html>
