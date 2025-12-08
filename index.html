@@ -3,79 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Finance Tracker & Control</title>
+    <title>Advanced Finance Tracker</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Tailwind Config for Custom Colors & Dark Mode -->
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            500: '#14b8a6', // Teal
-                            600: '#0d9488',
-                            700: '#0f766e', // Deep Teal
-                            800: '#115e59',
-                            900: '#134e4a',
-                        },
-                        accent: {
-                            400: '#fbbf24', // Goldish
-                            500: '#f59e0b',
-                        },
-                        dark: {
-                            bg: '#111827',
-                            surface: '#1f2937',
-                            border: '#374151',
-                            text: '#f3f4f6',
-                            muted: '#9ca3af'
-                        }
+                        brand: { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' },
+                        dark: { bg: '#111827', surface: '#1f2937', border: '#374151', text: '#f3f4f6' }
                     }
                 }
             }
         }
     </script>
 
-    <!-- FontAwesome for Icons -->
+    <!-- Icons & Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Export Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Slide Transition for Mobile Menu */
-        .slide-enter { transform: translateX(-100%); }
-        .slide-enter-active { transform: translateX(0); transition: transform 0.3s ease-out; }
-        .slide-exit { transform: translateX(0); }
-        .slide-exit-active { transform: translateX(-100%); transition: transform 0.3s ease-in; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 bg-white dark:bg-gray-800 border-l-4 shadow-lg rounded p-4 flex items-center gap-3">
+    <!-- Toast -->
+    <div id="toast" class="fixed top-5 right-5 z-[60] transform translate-x-full transition-transform duration-300 bg-white dark:bg-gray-800 border-l-4 shadow-lg rounded p-4 flex items-center gap-3">
         <i id="toast-icon" class="fas fa-check-circle text-green-500"></i>
         <div>
             <h4 id="toast-title" class="font-bold text-sm dark:text-white">Success</h4>
@@ -84,47 +51,35 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white dark:bg-dark-surface shadow-sm z-20 flex-none relative border-b dark:border-dark-border transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            
-            <!-- Left Side: Hamburger & Logo -->
-            <div class="flex items-center gap-3 md:gap-4">
-                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-gray-600 dark:text-gray-300 text-xl p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition">
+    <header class="bg-white dark:bg-dark-surface shadow-sm z-20 flex-none relative border-b dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-gray-600 dark:text-gray-300 text-xl p-2">
                     <i class="fas fa-bars"></i>
                 </button>
-
-                <div class="flex items-center gap-2">
-                    <div class="bg-brand-700 text-white p-1.5 rounded-lg">
-                        <i class="fas fa-wallet text-lg"></i>
-                    </div>
-                    <h1 class="text-lg sm:text-xl font-bold text-brand-900 dark:text-white tracking-tight">AFTC</h1>
+                <div class="flex items-center gap-2 text-brand-700 dark:text-brand-500">
+                    <i class="fas fa-wallet text-xl"></i>
+                    <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">AFTC</h1>
                 </div>
             </div>
 
-            <!-- Right Side: Dark Toggle & Auth -->
-            <div class="flex items-center gap-2 sm:gap-4">
-                <button onclick="toggleDarkMode()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-yellow-400 dark:hover:bg-gray-700 transition" title="Toggle Theme">
-                    <i id="theme-icon" class="fas fa-moon text-lg"></i>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDarkMode()" class="p-2 text-gray-500 hover:text-yellow-500 transition">
+                    <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
 
                 <div id="auth-section">
-                    <button id="btn-login" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 transition shadow-sm">
-                        <i class="fab fa-google text-red-500 text-base"></i> 
-                        <span class="hidden sm:inline">Continue with Google</span>
-                        <span class="sm:hidden">Login</span>
+                    <button id="btn-login" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                        <i class="fab fa-google text-red-500"></i> <span class="hidden sm:inline">Continue with Google</span><span class="sm:hidden">Login</span>
                     </button>
                     
-                    <div id="user-info" class="hidden flex items-center gap-2 sm:gap-3">
+                    <div id="user-info" class="hidden flex items-center gap-3">
                         <div class="text-right hidden sm:block">
-                            <p id="user-name" class="text-sm font-bold text-gray-900 dark:text-white leading-tight">User</p>
-                            <p id="user-status" class="text-[10px] text-green-600 dark:text-green-400 flex items-center justify-end gap-1 font-medium">
-                                <i class="fas fa-cloud"></i> Synced
-                            </p>
+                            <p id="user-name" class="text-sm font-bold leading-tight">User</p>
+                            <p id="user-status" class="text-[10px] text-green-600 font-bold">Cloud Active</p>
                         </div>
-                        <img id="user-avatar" src="" class="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-brand-100 dark:border-brand-900 shadow-sm">
-                        <button id="btn-logout-desktop" class="hidden md:block text-gray-400 hover:text-red-500 ml-2 transition" title="Logout">
-                            <i class="fas fa-sign-out-alt text-lg"></i>
-                        </button>
+                        <img id="user-avatar" src="" class="h-9 w-9 rounded-full border-2 border-brand-100">
+                        <button onclick="handleLogout()" class="hidden md:block text-gray-400 hover:text-red-500 ml-1"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </div>
             </div>
@@ -132,421 +87,191 @@
     </header>
 
     <div class="flex flex-1 overflow-hidden relative">
-        <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="bg-white dark:bg-dark-surface w-64 border-r border-gray-200 dark:border-dark-border hidden md:flex flex-col flex-none transition-all duration-300">
+        <!-- Sidebar -->
+        <aside class="bg-white dark:bg-dark-surface w-64 border-r border-gray-200 dark:border-dark-border hidden md:flex flex-col flex-none">
             <nav class="flex-1 p-4 space-y-1">
-                <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-brand-50 text-brand-700 dark:bg-gray-800 dark:text-brand-400">
-                    <i class="fas fa-chart-pie w-5"></i> Dashboard
-                </button>
-                <button onclick="router('expenses')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
-                    <i class="fas fa-minus-circle w-5 text-red-400"></i> Expenses
-                </button>
-                <button onclick="router('income')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
-                    <i class="fas fa-plus-circle w-5 text-green-400"></i> Income
-                </button>
-                <button onclick="router('export')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
-                    <i class="fas fa-file-export w-5 text-blue-400"></i> Export & Data
-                </button>
+                <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-pie w-5 text-brand-500"></i> Dashboard</button>
+                <button onclick="router('expenses')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-minus-circle w-5 text-red-500"></i> Expenses</button>
+                <button onclick="router('income')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-plus-circle w-5 text-green-500"></i> Income</button>
+                <button onclick="router('export')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-file-export w-5 text-blue-500"></i> Export</button>
             </nav>
-            <div class="p-4 border-t border-gray-100 dark:border-dark-border">
-                <div class="bg-brand-50 dark:bg-gray-800 p-4 rounded-xl">
-                    <p class="text-xs text-brand-600 dark:text-brand-400 font-semibold mb-1">Current Balance</p>
-                    <h3 id="sidebar-balance" class="text-xl font-bold text-brand-800 dark:text-white">$0.00</h3>
-                </div>
-            </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg p-4 sm:p-8 relative w-full transition-colors duration-300">
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg p-4 sm:p-8 relative w-full">
             
-            <!-- Mobile Menu Overlay -->
-            <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-900/50 z-40 hidden transition-opacity backdrop-blur-sm" onclick="toggleMobileMenu()"></div>
-            
-            <div id="mobile-menu-sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-white dark:bg-dark-surface shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
-                <div class="p-5 border-b border-gray-100 dark:border-dark-border flex items-center justify-between bg-gray-50 dark:bg-gray-800">
-                    <span class="font-bold text-brand-800 dark:text-white text-lg">Menu</span>
-                    <button onclick="toggleMobileMenu()" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleMobileMenu()"></div>
+            <div id="mobile-menu-sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-white dark:bg-dark-surface z-50 transform -translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+                <div class="p-5 border-b dark:border-gray-700 flex justify-between items-center">
+                    <span class="font-bold text-lg dark:text-white">Menu</span>
+                    <button onclick="toggleMobileMenu()" class="text-gray-500"><i class="fas fa-times text-xl"></i></button>
                 </div>
-                
-                <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                    <button onclick="router('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
-                        <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
-                    </button>
-                    <button onclick="router('expenses'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
-                        <i class="fas fa-minus-circle w-5 text-center text-red-400"></i> Expenses
-                    </button>
-                    <button onclick="router('income'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
-                        <i class="fas fa-plus-circle w-5 text-center text-green-400"></i> Income
-                    </button>
-                    <button onclick="router('export'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-700 dark:hover:text-white">
-                        <i class="fas fa-file-export w-5 text-center text-blue-400"></i> Export
-                    </button>
+                <nav class="flex-1 p-4 space-y-2">
+                    <button onclick="router('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
+                    <button onclick="router('expenses'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200"><i class="fas fa-minus-circle w-5 text-red-400"></i> Expenses</button>
+                    <button onclick="router('income'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200"><i class="fas fa-plus-circle w-5 text-green-400"></i> Income</button>
+                    <button onclick="router('export'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200"><i class="fas fa-file-export w-5 text-blue-400"></i> Export</button>
                 </nav>
-
-                <div id="mobile-logout-section" class="p-4 border-t border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-gray-800 hidden">
-                    <button id="btn-logout-mobile" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                <div id="mobile-logout-section" class="p-4 border-t dark:border-gray-700 hidden">
+                    <button onclick="handleLogout()" class="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-3 rounded-lg font-bold"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
 
-            <!-- VIEW: DASHBOARD -->
+            <!-- DASHBOARD VIEW -->
             <div id="view-dashboard" class="fade-in space-y-6">
-                <!-- Date Controller -->
-                <div class="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-2 flex items-center justify-between max-w-md mx-auto sm:mx-0">
-                    <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="text-center">
-                        <span id="current-month-display" class="block font-bold text-gray-800 dark:text-white text-sm sm:text-base">Loading...</span>
-                    </div>
-                    <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                <!-- Month Selector -->
+                <div class="bg-white dark:bg-dark-surface rounded-xl shadow-sm p-2 flex items-center justify-between max-w-md mx-auto sm:mx-0 border dark:border-gray-700">
+                    <button onclick="changeMonth(-1)" class="w-10 h-10 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"><i class="fas fa-chevron-left"></i></button>
+                    <span id="current-month-display" class="font-bold text-gray-800 dark:text-white">Loading...</span>
+                    <button onclick="changeMonth(1)" class="w-10 h-10 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"><i class="fas fa-chevron-right"></i></button>
                 </div>
 
-                <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Income</span>
-                            <h3 id="dash-income" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
-                            <div class="absolute top-4 right-4 bg-green-50 dark:bg-green-900/20 p-2 rounded-full text-green-500">
-                                <i class="fas fa-arrow-down transform rotate-45"></i>
-                            </div>
-                        </div>
+                <!-- Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-l-4 border-l-green-500 border-gray-100 dark:border-gray-700">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Income</p>
+                        <h3 id="dash-income" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">$0.00</h3>
                     </div>
-
-                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Expenses</span>
-                            <h3 id="dash-expense" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
-                            <p id="dash-expense-count" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">0 transactions</p>
-                            <div class="absolute top-4 right-4 bg-red-50 dark:bg-red-900/20 p-2 rounded-full text-red-500">
-                                <i class="fas fa-arrow-up transform rotate-45"></i>
-                            </div>
-                        </div>
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-l-4 border-l-red-500 border-gray-100 dark:border-gray-700">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Expenses</p>
+                        <h3 id="dash-expense" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">$0.00</h3>
                     </div>
-
-                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border relative overflow-hidden">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider uppercase mb-1">Balance</span>
-                            <h3 id="dash-balance" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">$0.00</h3>
-                            <p id="dash-insight" class="text-[11px] mt-1 font-medium">Analyzing...</p>
-                            <div class="absolute top-4 right-4 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-full text-blue-500">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                        </div>
+                    <div class="bg-white dark:bg-dark-surface p-5 rounded-2xl shadow-sm border border-l-4 border-l-blue-500 border-gray-100 dark:border-gray-700">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Balance</p>
+                        <h3 id="dash-balance" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">$0.00</h3>
+                        <p id="dash-insight" class="text-xs mt-1 font-medium">--</p>
                     </div>
                 </div>
 
-                <!-- Charts Area -->
+                <!-- Charts -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border lg:col-span-2">
-                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Spending Trend</h3>
-                        <div class="h-60 relative w-full">
-                            <canvas id="barChart"></canvas>
-                        </div>
+                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 lg:col-span-2">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Trend</h3>
+                        <div class="h-64"><canvas id="barChart"></canvas></div>
                     </div>
-                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border">
-                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Categories</h3>
-                        <div class="h-60 relative w-full flex justify-center">
-                            <canvas id="doughnutChart"></canvas>
-                        </div>
+                    <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Breakdown</h3>
+                        <div class="h-64 flex justify-center"><canvas id="doughnutChart"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Recent Transactions -->
-                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">Recent Activity</h3>
-                        <button onclick="router('expenses')" class="text-xs font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 uppercase tracking-wide">View All</button>
+                <!-- Recent List -->
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">Recent</h3>
+                        <button onclick="router('expenses')" class="text-xs font-bold text-brand-600 uppercase">View All</button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase">
-                                <tr>
-                                    <th class="px-6 py-3 font-semibold">Date</th>
-                                    <th class="px-6 py-3 font-semibold">Category</th>
-                                    <th class="px-6 py-3 font-semibold text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-transactions-list" class="divide-y divide-gray-100 dark:divide-gray-700">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                        <table class="w-full text-sm text-left"><tbody id="recent-transactions-list" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody></table>
                     </div>
                 </div>
 
-                <!-- Floating Add Expense Button -->
-                <button onclick="router('expenses')" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-brand-600 hover:bg-brand-700 text-white rounded-full p-4 shadow-lg transition transform hover:scale-105 z-30 flex items-center gap-2 group border-2 border-white dark:border-dark-bg" title="Add Expense">
-                    <i class="fas fa-plus text-xl"></i>
-                    <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold">Add Expense</span>
+                <!-- FAB -->
+                <button onclick="router('expenses')" class="fixed bottom-6 right-6 bg-brand-600 text-white p-4 rounded-full shadow-xl hover:scale-105 transition z-30 flex items-center gap-2">
+                    <i class="fas fa-plus text-xl"></i> <span class="font-bold hidden md:inline">Add Expense</span>
                 </button>
             </div>
 
-            <!-- VIEW: EXPENSES -->
+            <!-- EXPENSES VIEW -->
             <div id="view-expenses" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Expenses</h2>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded font-bold uppercase">Debit</span>
-                        <button onclick="router('dashboard')" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200 transition p-1" title="Close">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold dark:text-white">Add Expense</h2>
+                    <button onclick="router('dashboard')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl"><i class="fas fa-times"></i></button>
                 </div>
-                
-                <form id="expense-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Date</label>
-                            <input type="date" id="exp-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Amount</label>
-                            <input type="number" id="exp-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                        </div>
-                    </div>
 
+                <form id="expense-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <input type="date" id="exp-date" required class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                        <input type="number" id="exp-amount" placeholder="Amount" required min="0.01" step="0.01" class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                    </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Category</label>
-                            <select id="exp-category" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                                <option value="" disabled selected>Select Category</option>
-                                <option value="Mobile Package">Mobile Package</option>
-                                <option value="Family Payments">Family Payments</option>
-                                <option value="Grocery">Grocery</option>
-                                <option value="Shopping">Shopping</option>
-                                <option value="Utility Bills">Utility Bills</option>
-                                <option value="Transport">Transport</option>
-                                <option value="Miscellaneous">Miscellaneous</option>
+                            <select id="exp-category" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                                <option disabled selected>Select Category</option>
+                                <option>Mobile Package</option><option>Family Payments</option><option>Grocery</option><option>Shopping</option><option>Utility Bills</option><option>Transport</option><option>Miscellaneous</option>
                                 <option value="Custom">Custom / Other</option>
                             </select>
-                            <input type="text" id="exp-custom-category" placeholder="Enter Category Name" class="hidden mt-2 w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
+                            <input type="text" id="exp-custom-cat" placeholder="Type Category Name" class="hidden w-full mt-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Subcategory</label>
-                            <div id="subcategory-container">
-                                <select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg border p-2.5 outline-none text-gray-400 dark:text-gray-500" disabled>
-                                    <option>Select Main Category</option>
-                                </select>
-                            </div>
+                        <div id="exp-sub-container">
+                            <select id="exp-subcategory" disabled class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white text-gray-400"><option>Select Category First</option></select>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Note</label>
-                        <input type="text" id="exp-desc" placeholder="Optional description..." class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                    </div>
+                    <input type="text" id="exp-note" placeholder="Note (Optional)" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
 
-                    <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition shadow-lg shadow-brand-200 dark:shadow-none">
-                            Save Expense
-                        </button>
-                    </div>
+                    <button type="submit" id="btn-save-exp" class="w-full bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition">Save Expense</button>
                 </form>
 
-                <!-- Filter Toggle Section -->
-                <div class="space-y-4">
-                    <button onclick="toggleFilters('expense')" class="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                        <span class="flex items-center gap-2"><i class="fas fa-filter text-brand-500"></i> Filter & Search</span>
-                        <i id="expense-filter-icon" class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    
-                    <div id="expense-filter-panel" class="hidden bg-white dark:bg-dark-surface p-5 rounded-xl shadow-inner border border-gray-100 dark:border-dark-border space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Category</label>
-                                <select id="filter-exp-cat" onchange="applyFilters('expense')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
-                                    <option value="All">All Categories</option>
-                                    <option value="Mobile Package">Mobile Package</option>
-                                    <option value="Family Payments">Family Payments</option>
-                                    <option value="Grocery">Grocery</option>
-                                    <option value="Shopping">Shopping</option>
-                                    <option value="Utility Bills">Utility Bills</option>
-                                    <option value="Transport">Transport</option>
-                                    <option value="Miscellaneous">Miscellaneous</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Date</label>
-                                <input type="date" id="filter-exp-date" onchange="applyFilters('expense')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button onclick="clearFilters('expense')" class="text-xs text-red-500 hover:text-red-600 font-bold uppercase">Clear Filters</button>
-                        </div>
+                <!-- Expense List -->
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border dark:border-gray-700 overflow-hidden">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold dark:text-white">History</h3>
+                        <button onclick="document.getElementById('exp-filters').classList.toggle('hidden')" class="text-sm text-brand-600 font-bold"><i class="fas fa-filter"></i> Filter</button>
                     </div>
-                </div>
-
-                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-800/50">
-                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">History</h3>
+                    <div id="exp-filters" class="hidden p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-4 border-b dark:border-gray-700">
+                        <select id="filter-exp-cat" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white"><option value="All">All Categories</option></select>
+                        <input type="date" id="filter-exp-date" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                                <tr>
-                                    <th class="px-6 py-3 font-medium">Date</th>
-                                    <th class="px-6 py-3 font-medium">Details</th>
-                                    <th class="px-6 py-3 font-medium text-right">Amount</th>
-                                    <th class="px-6 py-3 font-medium text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="expense-list-table" class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left"><tbody id="expense-list-table" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody></table></div>
                 </div>
             </div>
 
-            <!-- VIEW: INCOME -->
+            <!-- INCOME VIEW -->
             <div id="view-income" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Income</h2>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded font-bold uppercase">Credit</span>
-                        <!-- Close Button -->
-                        <button onclick="router('dashboard')" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200 transition p-1" title="Close">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold dark:text-white">Add Income</h2>
+                    <button onclick="router('dashboard')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl"><i class="fas fa-times"></i></button>
                 </div>
                 
-                <form id="income-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border space-y-5">
+                <form id="income-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Date</label>
-                            <input type="date" id="inc-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Amount</label>
-                            <input type="number" id="inc-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                        </div>
+                        <input type="date" id="inc-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                        <input type="number" id="inc-amount" placeholder="Amount" required min="0.01" step="0.01" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Source</label>
-                        <select id="inc-source" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                            <option value="" disabled selected>Select Source</option>
-                            <option value="Salary">Salary</option>
-                            <option value="Freelance">Freelance</option>
-                            <option value="Business">Business</option>
-                            <option value="Gift">Gift</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Note</label>
-                        <input type="text" id="inc-note" placeholder="Optional note..." class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">
-                    </div>
-
-                    <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200 dark:shadow-none">
-                            Save Income
-                        </button>
-                    </div>
+                    <select id="inc-source" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                        <option disabled selected>Select Source</option>
+                        <option>Salary</option><option>Freelance</option><option>Business</option><option>Gift</option><option>Other</option>
+                    </select>
+                    <input type="text" id="inc-note" placeholder="Note" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                    <button type="submit" id="btn-save-inc" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition">Save Income</button>
                 </form>
 
-                <!-- Filter Toggle Section (Income) -->
-                <div class="space-y-4">
-                    <button onclick="toggleFilters('income')" class="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-100 dark:border-dark-border text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                        <span class="flex items-center gap-2"><i class="fas fa-filter text-green-500"></i> Filter & Search</span>
-                        <i id="income-filter-icon" class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    
-                    <div id="income-filter-panel" class="hidden bg-white dark:bg-dark-surface p-5 rounded-xl shadow-inner border border-gray-100 dark:border-dark-border space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Source</label>
-                                <select id="filter-inc-source" onchange="applyFilters('income')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
-                                    <option value="All">All Sources</option>
-                                    <option value="Salary">Salary</option>
-                                    <option value="Freelance">Freelance</option>
-                                    <option value="Business">Business</option>
-                                    <option value="Gift">Gift</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Date</label>
-                                <input type="date" id="filter-inc-date" onchange="applyFilters('income')" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2.5 outline-none text-gray-800 dark:text-white">
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button onclick="clearFilters('income')" class="text-xs text-red-500 hover:text-red-600 font-bold uppercase">Clear Filters</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-800/50">
-                        <h3 class="font-bold text-gray-800 dark:text-white text-sm uppercase">History</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                                <tr>
-                                    <th class="px-6 py-3 font-medium">Date</th>
-                                    <th class="px-6 py-3 font-medium">Source</th>
-                                    <th class="px-6 py-3 font-medium text-right">Amount</th>
-                                    <th class="px-6 py-3 font-medium text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="income-list-table" class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border dark:border-gray-700 overflow-hidden">
+                    <h3 class="p-4 font-bold border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white">History</h3>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left"><tbody id="income-list-table" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody></table></div>
                 </div>
             </div>
 
-            <!-- VIEW: EXPORT & SETTINGS -->
+            <!-- EXPORT VIEW -->
             <div id="view-export" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Export & Data</h2>
-
-                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border">
-                    <h3 class="font-bold text-gray-800 dark:text-white mb-4">Export Reports</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Download your financial data locally.</p>
-                    
+                <h2 class="text-2xl font-bold dark:text-white">Data Management</h2>
+                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700">
+                    <h3 class="font-bold dark:text-white mb-4">Export</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <button onclick="exportData('pdf')" class="flex items-center justify-center gap-3 p-4 border border-red-100 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/20 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/40 transition text-red-700 dark:text-red-400 font-medium">
-                            <i class="fas fa-file-pdf text-xl"></i> PDF
-                        </button>
-                        <button onclick="exportData('csv')" class="flex items-center justify-center gap-3 p-4 border border-green-100 dark:border-green-900/50 bg-green-50/50 dark:bg-green-900/20 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/40 transition text-green-700 dark:text-green-400 font-medium">
-                            <i class="fas fa-file-csv text-xl"></i> CSV
-                        </button>
-                        <button onclick="exportData('excel')" class="flex items-center justify-center gap-3 p-4 border border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/40 transition text-blue-700 dark:text-blue-400 font-medium">
-                            <i class="fas fa-file-excel text-xl"></i> Excel
-                        </button>
+                        <button onclick="exportData('pdf')" class="p-4 border border-red-100 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl font-bold flex justify-center gap-2"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <button onclick="exportData('csv')" class="p-4 border border-green-100 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl font-bold flex justify-center gap-2"><i class="fas fa-file-csv"></i> CSV</button>
+                        <button onclick="exportData('excel')" class="p-4 border border-blue-100 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold flex justify-center gap-2"><i class="fas fa-file-excel"></i> Excel</button>
                     </div>
                 </div>
-
-                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-red-100 dark:border-red-900/50">
-                    <h3 class="font-bold text-red-600 dark:text-red-400 mb-2">Danger Zone</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Resetting data will clear everything from your local storage.</p>
-                    <button onclick="resetAllData()" class="bg-white dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm font-bold w-full sm:w-auto">
-                        Reset All Data
-                    </button>
+                <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-red-100 dark:border-red-900/30">
+                    <h3 class="font-bold text-red-600 mb-2">Reset Data</h3>
+                    <button onclick="resetAllData()" class="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-bold transition">Delete All Records</button>
                 </div>
             </div>
 
         </main>
     </div>
 
-    <!-- Modals or Hidden Inputs for Logic -->
-    
+    <!-- LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Configuration & Globals ---
+        // --- FIREBASE CONFIG (YOURS) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDC-2S5ySoG0jfOuyMl93BkFF25JRrIkF8",
             authDomain: "advaceexpense.firebaseapp.com",
@@ -556,560 +281,472 @@
             appId: "1:233232869396:web:293fa94af34b25a00d9f01",
             measurementId: "G-GHN1VZGQGM"
         };
-        
-        const appId = "advaceexpense"; 
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
+
+        // --- STATE ---
         let currentUser = null;
-        let transactions = []; // Main in-memory data store
+        let transactions = [];
         let currentMonth = new Date();
         let charts = { bar: null, doughnut: null };
-        let activeFilters = {
-            expense: { category: 'All', date: '' },
-            income: { source: 'All', date: '' }
-        };
+        let unsubscribeFirestore = null;
 
-        // --- Category Map ---
         const CATEGORIES = {
-            "Mobile Package": ["Prepaid", "Postpaid", "Data Bundle", "Call Package"],
-            "Family Payments": ["Family Person", "Mother", "Ali", "Brother", "Custom"],
-            "Grocery": ["Vegetables", "Flour/Grains", "Household Items", "Other Grocery", "Custom"],
-            "Shopping": ["Clothing", "Electronics", "Gifts", "Custom"],
+            "Mobile Package": ["Prepaid", "Postpaid"],
+            "Family Payments": ["Mother", "Brother", "Custom"],
+            "Grocery": ["Vegetables", "Flour/Grains", "Household"],
+            "Shopping": ["Clothing", "Electronics"],
             "Utility Bills": ["Electricity", "Water", "Gas", "Internet"],
-            "Transport": ["Fuel", "Public Transport", "Maintenance", "Ride Hailing"],
-            "Miscellaneous": ["Dining Out", "Entertainment", "Health", "Custom"],
+            "Transport": ["Fuel", "Maintenance"],
+            "Miscellaneous": ["Dining Out", "Health"],
             "Custom": []
         };
 
-        // --- Authentication Logic ---
-        // Removed auto signInAnonymously call to adhere to "Unauthenticated = LocalStorage" requirement.
+        // --- AUTH & DATA LOGIC ---
         
-        const btnLogin = document.getElementById('btn-login');
-        const btnLogoutDesktop = document.getElementById('btn-logout-desktop');
-        const btnLogoutMobile = document.getElementById('btn-logout-mobile');
-
-        // Handle Login (Upgrade from Anonymous to Google)
-        btnLogin.addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login failed", error);
-                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/cancelled-popup-request') {
-                    showToast("Deploy Required", "Google Login requires Vercel deployment.", "error");
-                } else {
-                    showToast("Login Failed", error.message, "error");
-                }
-            }
-        });
-
-        async function handleLogout() {
-            if(confirm("Are you sure you want to logout?")) {
-                await signOut(auth);
-                // No auto re-login for guest. Just clear state.
-                currentUser = null;
-                transactions = [];
-                // Load local storage immediately
-                const raw = localStorage.getItem('financeData');
-                transactions = raw ? JSON.parse(raw) : [];
-                updateUI();
-                
-                // Close mobile menu if open
-                if (!document.getElementById('mobile-menu-overlay').classList.contains('hidden')) {
-                    toggleMobileMenu();
-                }
-                showToast("Logged Out", "Reverted to Guest Mode.");
-            }
-        }
-
-        btnLogoutDesktop.addEventListener('click', handleLogout);
-        btnLogoutMobile.addEventListener('click', handleLogout);
-        
-        // Auth State Listener
-        onAuthStateChanged(auth, async (user) => {
+        // 1. Auth Listener: The Brain
+        onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            
             if (user) {
-                // AUTHENTICATED -> FIRESTORE
+                // LOGGED IN: Cloud Mode
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('btn-login').classList.add('hidden');
-                
-                // Show Logout button in Mobile Menu
                 document.getElementById('mobile-logout-section').classList.remove('hidden');
+                if (document.getElementById('user-name')) document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || "User";
+                if (document.getElementById('user-status')) document.getElementById('user-status').textContent = "Cloud Sync";
+                if (document.getElementById('user-avatar')) document.getElementById('user-avatar').src = user.photoURL;
                 
-                document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || "User";
-                document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google';
-                document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=0F766E&color=fff`;
-
-                subscribeToCloudData(user.uid);
+                subscribeToCloud(user.uid);
             } else {
-                // UNAUTHENTICATED (GUEST) -> LOCAL STORAGE
+                // GUEST: Local Mode
                 document.getElementById('user-info').classList.add('hidden');
                 document.getElementById('btn-login').classList.remove('hidden');
                 document.getElementById('mobile-logout-section').classList.add('hidden');
                 
-                if (unsubscribeFirestore) unsubscribeFirestore();
-                
-                const raw = localStorage.getItem('financeData');
-                transactions = raw ? JSON.parse(raw) : [];
-                updateUI();
+                if (unsubscribeFirestore) unsubscribeFirestore(); // Stop listening to cloud
+                loadLocalData();
             }
         });
 
-        // --- Data Management ---
-        let unsubscribeFirestore = null;
-
-        function subscribeToCloudData(userId) {
-            if (unsubscribeFirestore) unsubscribeFirestore();
-
-            const q = query(collection(db, 'users', userId, 'transactions'));
-            
+        // 2. Cloud Subscription (Real-time)
+        function subscribeToCloud(uid) {
+            // Updated Path: users/{uid}/transactions
+            const q = collection(db, 'users', uid, 'transactions');
             unsubscribeFirestore = onSnapshot(q, (snapshot) => {
-                const cloudData = [];
-                snapshot.forEach((doc) => {
-                    cloudData.push({ ...doc.data(), id: doc.id });
+                const data = [];
+                snapshot.forEach(doc => {
+                    data.push({ id: doc.id, ...doc.data() });
                 });
-                transactions = cloudData;
+                transactions = data;
                 updateUI();
-            }, (error) => {
-                console.error("Firestore error:", error);
-            });
+            }, (err) => console.error("Firestore read error:", err));
         }
 
-        async function addTransaction(data) {
+        // 3. Local Data Loader
+        function loadLocalData() {
+            const raw = localStorage.getItem('financeData');
+            transactions = raw ? JSON.parse(raw) : [];
+            updateUI();
+        }
+
+        // 4. Save Transaction (Split Logic)
+        window.saveTransaction = async (data) => {
             if (currentUser) {
-                // Firestore
+                // Cloud Save
                 try {
-                    const ref = collection(db, 'users', currentUser.uid, 'transactions');
-                    delete data.id; 
-                    await addDoc(ref, data);
-                    showToast("Saved", "Saved to Database.");
+                    await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), data);
+                    showToast("Success", "Saved to Cloud Database");
                 } catch (e) {
-                    console.error(e);
-                    showToast("Error", "Failed to save to cloud.", "error");
+                    console.error("Cloud save failed", e);
+                    showToast("Error", "Could not save to cloud", "error");
                 }
             } else {
-                // Local Storage
+                // Local Save
                 data.id = crypto.randomUUID();
                 transactions.push(data);
                 localStorage.setItem('financeData', JSON.stringify(transactions));
+                updateUI(); // Manually update UI for local
+                showToast("Success", "Saved to Local Storage");
+            }
+        };
+
+        // 5. Delete Transaction (Split Logic)
+        window.deleteTx = async (id) => {
+            if(!confirm("Delete this record?")) return;
+            
+            if (currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
+                    showToast("Deleted", "Removed from Cloud");
+                } catch(e) { console.error(e); }
+            } else {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem('financeData', JSON.stringify(transactions));
                 updateUI();
-                showToast("Saved", "Saved locally.");
+                showToast("Deleted", "Removed Locally");
             }
-        }
+        };
 
-        async function deleteTransaction(id) {
-            if (confirm("Delete this transaction?")) {
-                if (currentUser) {
-                    // Firestore
-                    try {
-                        await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
-                        showToast("Deleted", "Removed from Database.");
-                    } catch (e) {
-                        showToast("Error", "Failed to delete.", "error");
-                    }
+        // --- UI & FORMS ---
+
+        // Toggle Custom Input
+        const catSelect = document.getElementById('exp-category');
+        if (catSelect) {
+            catSelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                const customInput = document.getElementById('exp-custom-cat');
+                const subContainer = document.getElementById('exp-sub-container');
+                
+                if (val === 'Custom') {
+                    customInput.classList.remove('hidden');
+                    customInput.required = true;
+                    subContainer.innerHTML = `<input type="text" id="exp-subcategory" placeholder="Subcategory" class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">`;
                 } else {
-                    // Local Storage
-                    transactions = transactions.filter(t => t.id !== id);
-                    localStorage.setItem('financeData', JSON.stringify(transactions));
-                    updateUI();
-                    showToast("Deleted", "Removed locally.");
+                    customInput.classList.add('hidden');
+                    customInput.required = false;
+                    // Build Sub dropdown
+                    let html = `<select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">`;
+                    (CATEGORIES[val] || []).forEach(s => html += `<option>${s}</option>`);
+                    html += `</select>`;
+                    subContainer.innerHTML = html;
                 }
-            }
-        }
-
-        // --- Dark Mode Logic ---
-        window.toggleDarkMode = function() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                icon.classList.replace('fa-sun', 'fa-moon');
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                icon.classList.replace('fa-moon', 'fa-sun');
-            }
-            updateChartsTheme();
-        }
-
-        // Init Theme
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
-        }
-
-        function updateChartsTheme() {
-            if(charts.bar || charts.doughnut) {
-                // Re-render dashboard to update chart colors
-                if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
-            }
-        }
-
-        // --- Filter Logic ---
-        window.toggleFilters = function(type) {
-            const panel = document.getElementById(`${type}-filter-panel`);
-            const icon = document.getElementById(`${type}-filter-icon`);
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                panel.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        }
-
-        window.applyFilters = function(type) {
-            if (type === 'expense') {
-                activeFilters.expense.category = document.getElementById('filter-exp-cat').value;
-                activeFilters.expense.date = document.getElementById('filter-exp-date').value;
-            } else {
-                activeFilters.income.source = document.getElementById('filter-inc-source').value;
-                activeFilters.income.date = document.getElementById('filter-inc-date').value;
-            }
-            renderLists();
-        }
-
-        window.clearFilters = function(type) {
-            if (type === 'expense') {
-                document.getElementById('filter-exp-cat').value = 'All';
-                document.getElementById('filter-exp-date').value = '';
-                activeFilters.expense = { category: 'All', date: '' };
-            } else {
-                document.getElementById('filter-inc-source').value = 'All';
-                document.getElementById('filter-inc-date').value = '';
-                activeFilters.income = { source: 'All', date: '' };
-            }
-            renderLists();
-        }
-
-        // --- UI Logic & Routing ---
-        window.router = function(viewName) {
-            ['dashboard', 'expenses', 'income', 'export'].forEach(v => {
-                document.getElementById(`view-${v}`).classList.add('hidden');
             });
-            document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            if (viewName === 'dashboard') renderDashboard();
-            
-            // Close mobile menu if moving
-            const overlay = document.getElementById('mobile-menu-overlay');
-            if(!overlay.classList.contains('hidden')) toggleMobileMenu();
         }
 
-        // Improved Mobile Menu Toggle
-        window.toggleMobileMenu = function() {
-            const overlay = document.getElementById('mobile-menu-overlay');
-            const sidebar = document.getElementById('mobile-menu-sidebar');
-            
-            if (overlay.classList.contains('hidden')) {
-                // Open
-                overlay.classList.remove('hidden');
-                sidebar.classList.remove('-translate-x-full');
-            } else {
-                // Close
-                overlay.classList.add('hidden');
-                sidebar.classList.add('-translate-x-full');
-            }
+        // Add Expense
+        const expenseForm = document.getElementById('expense-form');
+        if (expenseForm) {
+            expenseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-save-exp');
+                const originalText = btn.innerText;
+                btn.innerText = "Saving...";
+                
+                const catSelect = document.getElementById('exp-category').value;
+                const category = catSelect === 'Custom' ? document.getElementById('exp-custom-cat').value : catSelect;
+                const subcategory = document.getElementById('exp-subcategory').value || "";
+
+                const data = {
+                    type: 'expense',
+                    date: document.getElementById('exp-date').value,
+                    amount: parseFloat(document.getElementById('exp-amount').value),
+                    category,
+                    subcategory,
+                    note: document.getElementById('exp-note').value,
+                    timestamp: Date.now()
+                };
+
+                await window.saveTransaction(data);
+                
+                // Success Feedback on Button
+                btn.innerText = "Saved!";
+                btn.classList.add("bg-green-600");
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove("bg-green-600");
+                    e.target.reset();
+                    document.getElementById('exp-custom-cat').classList.add('hidden');
+                    document.getElementById('exp-date').valueAsDate = new Date();
+                    router('dashboard'); // Auto close
+                }, 1000);
+            });
         }
+
+        // Add Income
+        const incomeForm = document.getElementById('income-form');
+        if (incomeForm) {
+            incomeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-save-inc');
+                const originalText = btn.innerText;
+                btn.innerText = "Saving...";
+
+                const data = {
+                    type: 'income',
+                    date: document.getElementById('inc-date').value,
+                    amount: parseFloat(document.getElementById('inc-amount').value),
+                    source: document.getElementById('inc-source').value,
+                    note: document.getElementById('inc-note').value,
+                    timestamp: Date.now()
+                };
+
+                await window.saveTransaction(data);
+                
+                btn.innerText = "Saved!";
+                btn.classList.remove("bg-green-600"); 
+                btn.classList.add("bg-blue-600"); // Different feedback color
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove("bg-blue-600");
+                    btn.classList.add("bg-green-600");
+                    e.target.reset();
+                    document.getElementById('inc-date').valueAsDate = new Date();
+                    router('dashboard');
+                }, 1000);
+            });
+        }
+
+        // --- GLOBAL UTILS ---
+        window.router = (view) => {
+            ['dashboard', 'expenses', 'income', 'export'].forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if (el) el.classList.add('hidden');
+            });
+            const viewEl = document.getElementById(`view-${view}`);
+            if (viewEl) viewEl.classList.remove('hidden');
+            if(view === 'dashboard') updateUI();
+        };
+
+        window.toggleMobileMenu = () => {
+            const menu = document.getElementById('mobile-menu-sidebar');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if (!menu || !overlay) return;
+            const isOpen = !menu.classList.contains('-translate-x-full');
+            if(isOpen) {
+                menu.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                menu.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        };
+
+        window.toggleDarkMode = () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateUI(); // Redraw charts
+        };
+
+        // Login/Logout
+        const loginBtn = document.getElementById('btn-login');
+        if (loginBtn) {
+            loginBtn.onclick = async () => {
+                try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+                catch(e) { console.error(e); alert("Login Error: " + e.message); }
+            };
+        }
+
+        window.handleLogout = async () => {
+            if(confirm("Logout? Local data will be shown.")) {
+                await signOut(auth);
+                // Auth state listener handles the rest
+            }
+        };
+
+        window.resetAllData = async () => {
+            if(!confirm("Permanently delete ALL data?")) return;
+            if(currentUser) {
+                // Batch delete for cloud (basic implementation)
+                // Note: For large collections, cloud functions are better.
+                transactions.forEach(t => deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', t.id)));
+                showToast("Cleared", "Database wiped");
+            } else {
+                localStorage.removeItem('financeData');
+                transactions = [];
+                updateUI();
+                showToast("Cleared", "Local storage wiped");
+            }
+        };
+
+        // --- CHART & DASHBOARD LOGIC ---
+        window.changeMonth = (offset) => {
+            currentMonth.setMonth(currentMonth.getMonth() + offset);
+            updateUI();
+        };
 
         function updateUI() {
-            if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
-            renderLists(); // Always update lists for background views
-        }
-
-        // --- Dashboard & Charts ---
-        window.changeMonth = function(offset) {
-            currentMonth.setMonth(currentMonth.getMonth() + offset);
             renderDashboard();
+            renderLists();
         }
 
         function renderDashboard() {
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('current-month-display').textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-
             const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
             const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
             
+            // Date Header
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const currentMonthDisplay = document.getElementById('current-month-display');
+            if (currentMonthDisplay) {
+                currentMonthDisplay.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+            }
+
+            // Filter
             const monthData = transactions.filter(t => {
-                const tDate = new Date(t.date);
-                return tDate >= start && tDate <= end;
+                const d = new Date(t.date);
+                return d >= start && d <= end;
             });
 
-            let income = 0;
-            let expense = 0;
-            const expenseCats = {};
-            let todaysCount = 0;
-            const todayStr = new Date().toISOString().split('T')[0];
+            // Calcs
+            let income = 0, expense = 0, todayExp = 0;
+            const cats = {};
+            const today = new Date().toISOString().split('T')[0];
 
             monthData.forEach(t => {
                 const amt = parseFloat(t.amount);
-                if (t.type === 'income') {
-                    income += amt;
-                } else {
+                if(t.type === 'income') income += amt;
+                else {
                     expense += amt;
-                    expenseCats[t.category] = (expenseCats[t.category] || 0) + amt;
-                    if (t.date === todayStr) todaysCount++;
+                    cats[t.category] = (cats[t.category] || 0) + amt;
+                    if(t.date === today) todayExp++;
                 }
             });
 
-            const net = income - expense;
+            const incomeEl = document.getElementById('dash-income');
+            if (incomeEl) incomeEl.textContent = `$${income.toFixed(2)}`;
+            const expenseEl = document.getElementById('dash-expense');
+            if (expenseEl) expenseEl.textContent = `$${expense.toFixed(2)}`;
+            const balanceEl = document.getElementById('dash-balance');
+            if (balanceEl) balanceEl.textContent = `$${(income - expense).toFixed(2)}`;
+            const todayExpEl = document.getElementById('dash-expense-count');
+            if (todayExpEl) todayExpEl.textContent = `${todayExp} today`;
 
-            document.getElementById('dash-income').textContent = `$${income.toFixed(2)}`;
-            document.getElementById('dash-expense').textContent = `$${expense.toFixed(2)}`;
-            document.getElementById('dash-balance').textContent = `$${net.toFixed(2)}`;
-            document.getElementById('sidebar-balance').textContent = `$${net.toFixed(2)}`;
+            const insight = document.getElementById('dash-insight');
+            if (insight) {
+                if(income > expense) { insight.textContent = "Savings on track"; insight.className="text-xs mt-1 font-bold text-green-500"; }
+                else { insight.textContent = "Over budget"; insight.className="text-xs mt-1 font-bold text-red-500"; }
+            }
+
+            renderCharts(cats, monthData);
             
-            const elInsight = document.getElementById('dash-insight');
-            if (net < 0) { elInsight.textContent = "Over budget."; elInsight.className="text-[11px] text-red-500 mt-1 font-medium"; }
-            else { elInsight.textContent = "On track."; elInsight.className="text-[11px] text-green-500 mt-1 font-medium"; }
-            
-            document.getElementById('dash-expense-count').textContent = `${todaysCount} today`;
-
-            updateCharts(expenseCats, monthData);
-
-            const sorted = [...monthData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-            const listEl = document.getElementById('recent-transactions-list');
-            listEl.innerHTML = sorted.map(t => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">${t.date}</td>
-                    <td class="px-6 py-4">
-                        <span class="font-medium text-gray-900 dark:text-white">${t.type === 'income' ? t.source : t.category}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
-                        ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
-                    </td>
-                </tr>
-            `).join('');
+            // Recent List
+            const sorted = [...monthData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
+            const recentList = document.getElementById('recent-transactions-list');
+            if (recentList) {
+                recentList.innerHTML = sorted.map(t => `
+                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td class="p-3 text-gray-600 dark:text-gray-300">${t.date}</td>
+                        <td class="p-3 font-medium dark:text-white">${t.category || t.source}</td>
+                        <td class="p-3 text-right font-bold ${t.type==='income'?'text-green-500':'text-red-500'}">${t.type==='income'?'+':'-'}$${t.amount}</td>
+                    </tr>
+                `).join('');
+            }
         }
 
-        function updateCharts(categoryData, allMonthData) {
-            if (charts.bar) charts.bar.destroy();
-            if (charts.doughnut) charts.doughnut.destroy();
+        function renderCharts(cats, data) {
+            if(charts.bar) charts.bar.destroy();
+            if(charts.doughnut) charts.doughnut.destroy();
 
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#e5e7eb' : '#374151';
+            const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899'];
+            const textColor = document.documentElement.classList.contains('dark') ? '#fff' : '#333';
 
-            const catLabels = Object.keys(categoryData);
-            const catValues = Object.values(categoryData);
-            const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899', '#8b5cf6', '#ef4444'];
-
+            // Doughnut
             const ctxD = document.getElementById('doughnutChart').getContext('2d');
             charts.doughnut = new Chart(ctxD, {
                 type: 'doughnut',
                 data: {
-                    labels: catLabels,
-                    datasets: [{
-                        data: catValues,
-                        backgroundColor: colors,
-                        borderWidth: 0
-                    }]
+                    labels: Object.keys(cats),
+                    datasets: [{ data: Object.values(cats), backgroundColor: colors, borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } } 
                 }
             });
 
-            const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-            const days = Array.from({length: daysInMonth}, (_, i) => i + 1);
-            const dailyExp = new Array(daysInMonth).fill(0);
-            
-            allMonthData.forEach(t => {
-                if(t.type === 'expense') {
-                    const d = new Date(t.date).getDate();
-                    dailyExp[d-1] += parseFloat(t.amount);
-                }
-            });
+            // Bar
+            const days = Array.from({length: new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate()}, (_, i) => i+1);
+            const daily = new Array(days.length).fill(0);
+            data.filter(t => t.type === 'expense').forEach(t => daily[new Date(t.date).getDate()-1] += parseFloat(t.amount));
 
             const ctxB = document.getElementById('barChart').getContext('2d');
             charts.bar = new Chart(ctxB, {
                 type: 'bar',
                 data: {
                     labels: days,
-                    datasets: [{
-                        label: 'Exp',
-                        data: dailyExp,
-                        backgroundColor: '#14b8a6',
-                        borderRadius: 2
-                    }]
+                    datasets: [{ label: 'Daily', data: daily, backgroundColor: '#14b8a6', borderRadius: 2 }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, 
                     maintainAspectRatio: false,
                     scales: {
-                        y: { display: false },
-                        x: { grid: { display: false }, ticks: { font: { size: 8 }, color: textColor } }
+                        x: { grid: { display: false }, ticks: { color: textColor, font: {size: 8} } },
+                        y: { display: false }
                     },
                     plugins: { legend: { display: false } }
                 }
             });
         }
 
-        // --- Form Handling ---
-        const catSelect = document.getElementById('exp-category');
-        const subContainer = document.getElementById('subcategory-container');
-        
-        catSelect.addEventListener('change', (e) => {
-            const main = e.target.value;
-            const customInput = document.getElementById('exp-custom-category');
+        window.renderLists = () => {
+            // Basic list rendering for Expense/Income views (can add filters here)
+            const listExp = document.getElementById('expense-list-table');
+            const listInc = document.getElementById('income-list-table');
             
-            if (main === 'Custom') {
-                customInput.classList.remove('hidden');
-                customInput.required = true;
-                // Switch subcategory to text input
-                subContainer.innerHTML = `<input type="text" id="exp-subcategory" placeholder="Subcategory (Optional)" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
-            } else {
-                customInput.classList.add('hidden');
-                customInput.required = false;
-                // Revert to dropdown
-                const subs = CATEGORIES[main];
-                let html = `<select id="exp-subcategory" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition text-gray-800 dark:text-white">`;
-                if(subs) {
-                    subs.forEach(s => html += `<option value="${s}">${s}</option>`);
-                }
-                html += `</select>`;
-                subContainer.innerHTML = html;
-            }
-        });
-
-        document.getElementById('expense-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const catSelectVal = document.getElementById('exp-category').value;
-            let finalCategory = catSelectVal;
-            
-            if (catSelectVal === 'Custom') {
-                finalCategory = document.getElementById('exp-custom-category').value;
-            }
-
-            const subVal = document.getElementById('exp-subcategory').value || "General";
-            
-            const data = {
-                type: 'expense',
-                date: document.getElementById('exp-date').value,
-                amount: parseFloat(document.getElementById('exp-amount').value),
-                category: finalCategory,
-                subcategory: subVal,
-                description: document.getElementById('exp-desc').value,
-                timestamp: Date.now()
-            };
-            await addTransaction(data);
-            e.target.reset();
-            
-            // Reset UI state for custom input
-            document.getElementById('exp-custom-category').classList.add('hidden');
-            document.getElementById('exp-date').valueAsDate = new Date();
-            renderLists();
-        });
-
-        document.getElementById('income-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                type: 'income',
-                date: document.getElementById('inc-date').value,
-                amount: parseFloat(document.getElementById('inc-amount').value),
-                source: document.getElementById('inc-source').value,
-                note: document.getElementById('inc-note').value,
-                timestamp: Date.now()
-            };
-            await addTransaction(data);
-            e.target.reset();
-            document.getElementById('inc-date').valueAsDate = new Date();
-            renderLists();
-        });
-
-        window.renderLists = function() {
+            // Using global transactions (filtered by active filters logic if added)
+            // For simplicity in this fix, showing current month's sorted data
             const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
             const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-            
-            const monthData = transactions.filter(t => {
-                const tDate = new Date(t.date);
-                return tDate >= start && tDate <= end;
-            }).sort((a,b) => new Date(b.date) - new Date(a.date));
+            const data = transactions.filter(t => new Date(t.date) >= start && new Date(t.date) <= end).sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            const expList = document.getElementById('expense-list-table');
-            // Re-apply filters if needed, but keeping simple logic here as requested in "working perfectly"
-            expList.innerHTML = monthData.filter(t => t.type === 'expense').map(t => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">${t.date}</td>
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900 dark:text-white">${t.category}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">${t.subcategory}</div>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold text-gray-700 dark:text-gray-200">$${parseFloat(t.amount).toFixed(2)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            if (listExp) {
+                listExp.innerHTML = data.filter(t => t.type === 'expense').map(t => `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="p-3 dark:text-gray-300">${t.date}</td>
+                        <td class="p-3">
+                            <div class="font-bold dark:text-white">${t.category}</div>
+                            <div class="text-xs text-gray-500">${t.subcategory}</div>
+                        </td>
+                        <td class="p-3 text-right font-bold text-gray-700 dark:text-gray-200">$${t.amount}</td>
+                        <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            }
 
-            const incList = document.getElementById('income-list-table');
-            incList.innerHTML = monthData.filter(t => t.type === 'income').map(t => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">${t.date}</td>
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900 dark:text-white">${t.source}</div>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold text-green-600 dark:text-green-400">$${parseFloat(t.amount).toFixed(2)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        window.deleteTx = (id) => deleteTransaction(id);
+            if (listInc) {
+                listInc.innerHTML = data.filter(t => t.type === 'income').map(t => `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="p-3 dark:text-gray-300">${t.date}</td>
+                        <td class="p-3 font-bold dark:text-white">${t.source}</td>
+                        <td class="p-3 text-right font-bold text-green-500">$${t.amount}</td>
+                        <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            }
+        };
 
-        window.exportData = function(format) {
-            if (transactions.length === 0) return showToast("Empty", "No data.", "error");
+        // Export/Toast
+        window.showToast = (title, msg) => {
+            const el = document.getElementById('toast');
+            if (!el) return;
+            const titleEl = document.getElementById('toast-title');
+            const msgEl = document.getElementById('toast-msg');
+            if (titleEl) titleEl.innerText = title;
+            if (msgEl) msgEl.innerText = msg;
+            el.classList.remove('translate-x-full');
+            setTimeout(() => el.classList.add('translate-x-full'), 3000);
+        };
 
-            if (format === 'excel' || format === 'csv') {
+        window.exportData = (type) => {
+            if(!transactions.length) return showToast("Empty", "No data to export");
+            if(type === 'csv' || type === 'excel') {
                 const ws = XLSX.utils.json_to_sheet(transactions);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "FinanceData");
-                const ext = format === 'excel' ? 'xlsx' : 'csv';
-                XLSX.writeFile(wb, `Finance_Report.${ext}`);
-            } else if (format === 'pdf') {
-                const { jsPDF } = window.jspdf;
+                XLSX.utils.book_append_sheet(wb, ws, "Data");
+                XLSX.writeFile(wb, `Finance_Data.${type === 'excel' ? 'xlsx' : 'csv'}`);
+            } else {
                 const doc = new jsPDF();
-                doc.text("Finance Report", 14, 20);
-                const tableColumn = ["Date", "Type", "Category", "Amount"];
-                const tableRows = [];
-                transactions.forEach(t => {
-                    tableRows.push([t.date, t.type, t.category || t.source, t.amount]);
+                doc.text("Finance Report", 10, 10);
+                doc.autoTable({
+                    head: [['Date', 'Type', 'Category', 'Amount']],
+                    body: transactions.map(t => [t.date, t.type, t.category||t.source, t.amount])
                 });
-                doc.autoTable({ head: [tableColumn], body: tableRows, startY: 30 });
-                doc.save('Finance_Report.pdf');
+                doc.save('Report.pdf');
             }
-        }
+        };
 
-        window.resetAllData = function() {
-            if(confirm("Permanently delete ALL data?")) {
-                if(currentUser) {
-                     transactions.forEach(t => deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', t.id)));
-                } else {
-                    transactions = [];
-                    localStorage.removeItem('financeData');
-                    location.reload();
-                }
-            }
-        }
-
-        function showToast(title, msg, type="success") {
-            const el = document.getElementById('toast');
-            document.getElementById('toast-title').textContent = title;
-            document.getElementById('toast-msg').textContent = msg;
-            el.classList.remove('translate-x-full');
-            setTimeout(() => { el.classList.add('translate-x-full'); }, 3000);
-        }
-
-        document.getElementById('exp-date').valueAsDate = new Date();
-        document.getElementById('inc-date').valueAsDate = new Date();
-        renderDashboard();
+        // Init defaults
+        const expDate = document.getElementById('exp-date');
+        if (expDate) expDate.valueAsDate = new Date();
+        const incDate = document.getElementById('inc-date');
+        if (incDate) incDate.valueAsDate = new Date();
+        
+        // Check local theme
+        if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
 
     </script>
+</body>
+</html>
