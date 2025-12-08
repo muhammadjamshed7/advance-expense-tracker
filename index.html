@@ -53,10 +53,6 @@
         
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Spinner */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #0f766e; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
@@ -71,40 +67,58 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white shadow-sm z-20 flex-none">
+    <header class="bg-white shadow-sm z-20 flex-none relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-brand-700 text-white p-2 rounded-lg">
-                    <i class="fas fa-wallet text-xl"></i>
-                </div>
-                <h1 class="text-xl font-bold text-brand-900 tracking-tight hidden sm:block">Advanced Finance Tracker</h1>
-                <h1 class="text-xl font-bold text-brand-900 tracking-tight sm:hidden">AFTC</h1>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div id="auth-section">
-                    <!-- Injected via JS -->
-                    <button id="btn-login" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition">
-                        <i class="fab fa-google text-red-500"></i> Continue with Google
-                    </button>
-                    <div id="user-info" class="hidden flex items-center gap-3">
-                        <div class="text-right hidden md:block">
-                            <p id="user-name" class="text-sm font-bold text-gray-900">Guest User</p>
-                            <p id="user-status" class="text-xs text-green-600 flex items-center gap-1 justify-end"><i class="fas fa-cloud"></i> Saved to Database</p>
-                        </div>
-                        <img id="user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=0F766E&color=fff" class="h-9 w-9 rounded-full border-2 border-brand-100">
-                        <button id="btn-logout" class="text-gray-400 hover:text-red-500" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
-                    </div>
-                </div>
-                <button id="mobile-menu-btn" class="md:hidden text-gray-600 text-xl">
+            
+            <!-- Left Side: Hamburger (Mobile) & Logo -->
+            <div class="flex items-center gap-3 md:gap-4">
+                <!-- Hamburger Button (Moved to Left as requested) -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-600 text-xl p-2 rounded-md hover:bg-gray-100 focus:outline-none">
                     <i class="fas fa-bars"></i>
                 </button>
+
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="bg-brand-700 text-white p-1.5 rounded-lg">
+                        <i class="fas fa-wallet text-lg"></i>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold text-brand-900 tracking-tight">AFTC</h1>
+                </div>
+            </div>
+
+            <!-- Right Side: Auth / Profile -->
+            <div class="flex items-center gap-2">
+                <div id="auth-section">
+                    <!-- Login Button: Text hidden on small mobile to save space -->
+                    <button id="btn-login" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 transition shadow-sm">
+                        <i class="fab fa-google text-red-500 text-base"></i> 
+                        <span class="hidden sm:inline">Continue with Google</span>
+                        <span class="sm:hidden">Login</span>
+                    </button>
+                    
+                    <!-- User Info: Simplified for header -->
+                    <div id="user-info" class="hidden flex items-center gap-2 sm:gap-3">
+                        <div class="text-right hidden sm:block">
+                            <p id="user-name" class="text-sm font-bold text-gray-900 leading-tight">User</p>
+                            <p id="user-status" class="text-[10px] text-green-600 flex items-center justify-end gap-1 font-medium">
+                                <i class="fas fa-cloud"></i> Synced
+                            </p>
+                        </div>
+                        <!-- Avatar -->
+                        <img id="user-avatar" src="" class="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-brand-100 shadow-sm">
+                        
+                        <!-- NOTE: Logout button removed from here on mobile to prevent accidental touches -->
+                        <button id="btn-logout-desktop" class="hidden md:block text-gray-400 hover:text-red-500 ml-2 transition" title="Logout">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar Navigation -->
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Sidebar Navigation (Desktop) -->
         <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 hidden md:flex flex-col flex-none transition-all">
             <nav class="flex-1 p-4 space-y-1">
                 <button onclick="router('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-brand-50 text-brand-700">
@@ -129,66 +143,107 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-8 relative">
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-8 relative w-full">
             
-            <!-- Mobile Menu Overlay -->
-            <div id="mobile-menu" class="absolute top-0 left-0 w-full bg-white shadow-lg z-10 p-4 space-y-2 md:hidden hidden">
-                <button onclick="router('dashboard'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50">Dashboard</button>
-                <button onclick="router('expenses'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50">Expenses</button>
-                <button onclick="router('income'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50">Income</button>
-                <button onclick="router('export'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50">Export</button>
+            <!-- Mobile Menu Overlay (Improved Design) -->
+            <div id="mobile-menu" class="absolute inset-0 bg-gray-800/50 z-30 hidden md:hidden transition-opacity">
+                <!-- Menu Content -->
+                <div class="bg-white w-64 h-full shadow-xl flex flex-col animate-slideRight">
+                    <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                        <span class="font-bold text-brand-800 text-lg">Menu</span>
+                        <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-gray-800">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                        <button onclick="router('dashboard'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+                        </button>
+                        <button onclick="router('expenses'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <i class="fas fa-minus-circle w-5 text-center text-red-400"></i> Expenses
+                        </button>
+                        <button onclick="router('income'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <i class="fas fa-plus-circle w-5 text-center text-green-400"></i> Income
+                        </button>
+                        <button onclick="router('export'); toggleMobileMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <i class="fas fa-file-export w-5 text-center text-blue-400"></i> Export
+                        </button>
+                    </nav>
+
+                    <!-- LOGOUT BUTTON IN HAMBURGER MENU (For Safety) -->
+                    <div id="mobile-logout-section" class="p-4 border-t border-gray-200 bg-gray-50 hidden">
+                        <button id="btn-logout-mobile" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-600 font-medium hover:bg-red-100 transition">
+                            <i class="fas fa-sign-out-alt"></i> Logout Securely
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- VIEW: DASHBOARD -->
             <div id="view-dashboard" class="fade-in space-y-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
-                    <div class="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded text-gray-500"><i class="fas fa-chevron-left"></i></button>
-                        <span id="current-month-display" class="px-4 font-medium text-gray-700 w-32 text-center">Loading...</span>
-                        <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded text-gray-500"><i class="fas fa-chevron-right"></i></button>
+                <!-- Date Controller -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-2 flex items-center justify-between max-w-md mx-auto sm:mx-0">
+                    <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center">
+                        <span id="current-month-display" class="block font-bold text-gray-800 text-sm sm:text-base">Loading...</span>
                     </div>
+                    <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
 
                 <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-green-100 p-3 rounded-full text-green-600"><i class="fas fa-arrow-down"></i></div>
-                            <span class="text-xs font-semibold text-gray-400 uppercase">Income</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    <!-- Income Card -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Income</span>
+                            <h3 id="dash-income" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
+                            <div class="absolute top-4 right-4 bg-green-50 p-2 rounded-full text-green-500">
+                                <i class="fas fa-arrow-down transform rotate-45"></i>
+                            </div>
                         </div>
-                        <h3 id="dash-income" class="text-2xl font-bold text-gray-900">$0.00</h3>
-                        <p class="text-xs text-gray-500 mt-1">This month</p>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-red-100 p-3 rounded-full text-red-600"><i class="fas fa-arrow-up"></i></div>
-                            <span class="text-xs font-semibold text-gray-400 uppercase">Expenses</span>
+
+                    <!-- Expense Card -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Expenses</span>
+                            <h3 id="dash-expense" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
+                            <p id="dash-expense-count" class="text-[10px] text-gray-400 mt-1">0 transactions</p>
+                            <div class="absolute top-4 right-4 bg-red-50 p-2 rounded-full text-red-500">
+                                <i class="fas fa-arrow-up transform rotate-45"></i>
+                            </div>
                         </div>
-                        <h3 id="dash-expense" class="text-2xl font-bold text-gray-900">$0.00</h3>
-                        <p id="dash-expense-count" class="text-xs text-gray-500 mt-1">0 transactions today</p>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-blue-100 p-3 rounded-full text-blue-600"><i class="fas fa-wallet"></i></div>
-                            <span class="text-xs font-semibold text-gray-400 uppercase">Balance</span>
+
+                    <!-- Balance Card -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Balance</span>
+                            <h3 id="dash-balance" class="text-2xl sm:text-3xl font-bold text-gray-900">$0.00</h3>
+                            <p id="dash-insight" class="text-[11px] mt-1 font-medium">Analyzing...</p>
+                            <div class="absolute top-4 right-4 bg-blue-50 p-2 rounded-full text-blue-500">
+                                <i class="fas fa-wallet"></i>
+                            </div>
                         </div>
-                        <h3 id="dash-balance" class="text-2xl font-bold text-gray-900">$0.00</h3>
-                        <p id="dash-insight" class="text-xs text-brand-600 mt-1 font-medium">Analyzing...</p>
                     </div>
                 </div>
 
                 <!-- Charts Area -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-                        <h3 class="font-bold text-gray-800 mb-4">Monthly Spending Trend</h3>
-                        <div class="h-64 relative w-full">
+                        <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase">Spending Trend</h3>
+                        <div class="h-60 relative w-full">
                             <canvas id="barChart"></canvas>
                         </div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-gray-800 mb-4">Category Breakdown</h3>
-                        <div class="h-64 relative w-full flex justify-center">
+                        <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase">Categories</h3>
+                        <div class="h-60 relative w-full flex justify-center">
                             <canvas id="doughnutChart"></canvas>
                         </div>
                     </div>
@@ -196,18 +251,17 @@
 
                 <!-- Recent Transactions -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-800">Recent Activity</h3>
-                        <button onclick="router('expenses')" class="text-sm text-brand-600 hover:underline">View All</button>
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <h3 class="font-bold text-gray-800 text-sm uppercase">Recent Activity</h3>
+                        <button onclick="router('expenses')" class="text-xs font-bold text-brand-600 hover:text-brand-700 uppercase tracking-wide">View All</button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-500">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
                                 <tr>
-                                    <th class="px-6 py-3 font-medium">Date</th>
-                                    <th class="px-6 py-3 font-medium">Category</th>
-                                    <th class="px-6 py-3 font-medium">Note</th>
-                                    <th class="px-6 py-3 font-medium text-right">Amount</th>
+                                    <th class="px-6 py-3 font-semibold">Date</th>
+                                    <th class="px-6 py-3 font-semibold">Category</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody id="recent-transactions-list" class="divide-y divide-gray-100">
@@ -220,24 +274,27 @@
 
             <!-- VIEW: EXPENSES -->
             <div id="view-expenses" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <h2 class="text-2xl font-bold text-gray-900">Record Expense</h2>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900">Expenses</h2>
+                    <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold uppercase">Debit</span>
+                </div>
                 
                 <form id="expense-form" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                            <input type="date" id="exp-date" required class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
+                            <input type="date" id="exp-date" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                            <input type="number" id="exp-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount</label>
+                            <input type="number" id="exp-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select id="exp-category" required class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                            <select id="exp-category" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                                 <option value="" disabled selected>Select Category</option>
                                 <option value="Mobile Package">Mobile Package</option>
                                 <option value="Family Payments">Family Payments</option>
@@ -249,40 +306,39 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subcategory</label>
                             <div id="subcategory-container">
-                                <select id="exp-subcategory" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none bg-gray-50" disabled>
-                                    <option>Select Main Category First</option>
+                                <select id="exp-subcategory" class="w-full bg-gray-50 border-gray-200 rounded-lg border p-2.5 outline-none text-gray-400" disabled>
+                                    <option>Select Main Category</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-                        <textarea id="exp-desc" rows="2" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none"></textarea>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Note</label>
+                        <input type="text" id="exp-desc" placeholder="Optional description..." class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-brand-600 text-white font-medium py-2.5 rounded-lg hover:bg-brand-700 transition shadow-sm">
-                            <i class="fas fa-check mr-2"></i> Save Expense
-                        </button>
-                        <button type="button" onclick="resetForm('expense-form')" class="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-200">
-                            Clear
+                        <button type="submit" class="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition shadow-lg shadow-brand-200">
+                            Save Expense
                         </button>
                     </div>
                 </form>
 
-                <h3 class="text-lg font-bold text-gray-800 mt-8">Expense History (This Month)</h3>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="font-bold text-gray-800 text-sm uppercase">History</h3>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
                             <thead class="bg-gray-50 text-gray-500">
                                 <tr>
                                     <th class="px-6 py-3 font-medium">Date</th>
                                     <th class="px-6 py-3 font-medium">Details</th>
                                     <th class="px-6 py-3 font-medium text-right">Amount</th>
-                                    <th class="px-6 py-3 font-medium text-center">Action</th>
+                                    <th class="px-6 py-3 font-medium text-center"></th>
                                 </tr>
                             </thead>
                             <tbody id="expense-list-table" class="divide-y divide-gray-100">
@@ -295,23 +351,26 @@
 
             <!-- VIEW: INCOME -->
             <div id="view-income" class="hidden fade-in max-w-3xl mx-auto space-y-6">
-                <h2 class="text-2xl font-bold text-gray-900">Record Income</h2>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900">Income</h2>
+                    <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded font-bold uppercase">Credit</span>
+                </div>
                 
                 <form id="income-form" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                            <input type="date" id="inc-date" required class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
+                            <input type="date" id="inc-date" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                            <input type="number" id="inc-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount</label>
+                            <input type="number" id="inc-amount" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
-                        <select id="inc-source" required class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Source</label>
+                        <select id="inc-source" required class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                             <option value="" disabled selected>Select Source</option>
                             <option value="Salary">Salary</option>
                             <option value="Freelance">Freelance</option>
@@ -322,27 +381,29 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                        <textarea id="inc-note" rows="2" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none"></textarea>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Note</label>
+                        <input type="text" id="inc-note" placeholder="Optional note..." class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-green-600 text-white font-medium py-2.5 rounded-lg hover:bg-green-700 transition shadow-sm">
-                            <i class="fas fa-check mr-2"></i> Save Income
+                        <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200">
+                            Save Income
                         </button>
                     </div>
                 </form>
 
-                <h3 class="text-lg font-bold text-gray-800 mt-8">Income History (This Month)</h3>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="font-bold text-gray-800 text-sm uppercase">History</h3>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
                             <thead class="bg-gray-50 text-gray-500">
                                 <tr>
                                     <th class="px-6 py-3 font-medium">Date</th>
                                     <th class="px-6 py-3 font-medium">Source</th>
                                     <th class="px-6 py-3 font-medium text-right">Amount</th>
-                                    <th class="px-6 py-3 font-medium text-center">Action</th>
+                                    <th class="px-6 py-3 font-medium text-center"></th>
                                 </tr>
                             </thead>
                             <tbody id="income-list-table" class="divide-y divide-gray-100">
@@ -359,28 +420,25 @@
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <h3 class="font-bold text-gray-800 mb-4">Export Reports</h3>
-                    <p class="text-sm text-gray-500 mb-6">Download your financial data. No data is sent to external email servers.</p>
+                    <p class="text-sm text-gray-500 mb-6">Download your financial data locally.</p>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <button onclick="exportData('pdf')" class="flex flex-col items-center justify-center p-6 border-2 border-red-100 rounded-xl hover:bg-red-50 hover:border-red-300 transition group">
-                            <i class="fas fa-file-pdf text-3xl text-red-500 mb-3 group-hover:scale-110 transition"></i>
-                            <span class="font-bold text-gray-700">Download PDF</span>
+                        <button onclick="exportData('pdf')" class="flex items-center justify-center gap-3 p-4 border border-red-100 bg-red-50/50 rounded-xl hover:bg-red-50 transition text-red-700 font-medium">
+                            <i class="fas fa-file-pdf text-xl"></i> PDF
                         </button>
-                        <button onclick="exportData('csv')" class="flex flex-col items-center justify-center p-6 border-2 border-green-100 rounded-xl hover:bg-green-50 hover:border-green-300 transition group">
-                            <i class="fas fa-file-csv text-3xl text-green-500 mb-3 group-hover:scale-110 transition"></i>
-                            <span class="font-bold text-gray-700">Download CSV</span>
+                        <button onclick="exportData('csv')" class="flex items-center justify-center gap-3 p-4 border border-green-100 bg-green-50/50 rounded-xl hover:bg-green-50 transition text-green-700 font-medium">
+                            <i class="fas fa-file-csv text-xl"></i> CSV
                         </button>
-                        <button onclick="exportData('excel')" class="flex flex-col items-center justify-center p-6 border-2 border-blue-100 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition group">
-                            <i class="fas fa-file-excel text-3xl text-blue-500 mb-3 group-hover:scale-110 transition"></i>
-                            <span class="font-bold text-gray-700">Download Excel</span>
+                        <button onclick="exportData('excel')" class="flex items-center justify-center gap-3 p-4 border border-blue-100 bg-blue-50/50 rounded-xl hover:bg-blue-50 transition text-blue-700 font-medium">
+                            <i class="fas fa-file-excel text-xl"></i> Excel
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100">
                     <h3 class="font-bold text-red-600 mb-2">Danger Zone</h3>
-                    <p class="text-sm text-gray-500 mb-4">Permanently delete all data from this device/account.</p>
-                    <button onclick="resetAllData()" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium">
+                    <p class="text-sm text-gray-500 mb-4">Resetting data will clear everything from your local storage.</p>
+                    <button onclick="resetAllData()" class="bg-white text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition text-sm font-bold w-full sm:w-auto">
                         Reset All Data
                     </button>
                 </div>
@@ -397,7 +455,6 @@
         import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuration & Globals ---
-        // Replacing default config with USER PROVIDED CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDC-2S5ySoG0jfOuyMl93BkFF25JRrIkF8",
             authDomain: "advaceexpense.firebaseapp.com",
@@ -408,8 +465,6 @@
             measurementId: "G-GHN1VZGQGM"
         };
         
-        // App ID logic: We use a fixed ID or the project ID to keep collections separated if needed.
-        // But since user provided a specific project, we can just use "default" or the project ID as the root path to be safe.
         const appId = "advaceexpense"; 
 
         const app = initializeApp(firebaseConfig);
@@ -435,21 +490,20 @@
         // --- Authentication Logic ---
         const initAuth = async () => {
             try {
-                // Try anonymous auth. If it fails (admin restricted), catch it and do nothing
-                // (letting the app fall back to localStorage/Guest Mode in onAuthStateChanged).
+                // Try anonymous auth. If it fails (admin restricted), catch it.
                 await signInAnonymously(auth);
             } catch (err) {
-                console.warn("Auth initialization warning:", err.code, err.message);
+                console.warn("Auth initialization warning:", err.code);
                 if (err.code === 'auth/admin-restricted-operation') {
-                    showToast("Guest Mode", "Anonymous login disabled. Using Local Storage.", "info");
+                    showToast("Guest Mode", "Using Local Storage.", "info");
                 }
             }
         };
         initAuth();
 
         const btnLogin = document.getElementById('btn-login');
-        const btnLogout = document.getElementById('btn-logout');
-        const authSection = document.getElementById('auth-section');
+        const btnLogoutDesktop = document.getElementById('btn-logout-desktop');
+        const btnLogoutMobile = document.getElementById('btn-logout-mobile');
 
         // Handle Login (Upgrade from Anonymous to Google)
         btnLogin.addEventListener('click', async () => {
@@ -459,58 +513,64 @@
             } catch (error) {
                 console.error("Login failed", error);
                 if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/cancelled-popup-request') {
-                    showToast("Login Unavailable", "Please deploy to Vercel to use Google Login. Database is active in Guest Mode.", "error");
+                    showToast("Deploy Required", "Google Login requires Vercel deployment.", "error");
                 } else {
                     showToast("Login Failed", error.message, "error");
                 }
             }
         });
 
-        // Handle Logout
-        btnLogout.addEventListener('click', async () => {
-            await signOut(auth);
-            // Immediately sign back in anonymously to keep "saving to database" active for guest
-            // If that fails, it will just fail silently and stay null (local storage mode)
-            try {
-                await signInAnonymously(auth);
-            } catch(e) {
-                console.warn("Re-auth failed", e);
+        async function handleLogout() {
+            if(confirm("Are you sure you want to logout?")) {
+                await signOut(auth);
+                // Immediately sign back in anonymously to keep app working for guest
+                try {
+                    await signInAnonymously(auth);
+                } catch(e) { console.warn("Re-auth failed", e); }
+                
+                transactions = [];
+                // Close mobile menu if open
+                const menu = document.getElementById('mobile-menu');
+                if(!menu.classList.contains('hidden')) {
+                    toggleMobileMenu();
+                }
+                showToast("Logged Out", "Reverted to Guest Mode.");
             }
-            transactions = [];
-            showToast("Logged Out", "Reverted to Guest Mode.");
-        });
+        }
+
+        btnLogoutDesktop.addEventListener('click', handleLogout);
+        btnLogoutMobile.addEventListener('click', handleLogout);
 
         // Auth State Listener
-        // NOW: EVERY user (Anon or Google) is treated as a Database User
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             
             if (user) {
-                // We have a user (either Anon or Google)
-                // Show User Info in Header
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('btn-login').classList.add('hidden');
                 
+                // Show Logout button in Mobile Menu
+                document.getElementById('mobile-logout-section').classList.remove('hidden');
+                
                 if (user.isAnonymous) {
-                    document.getElementById('user-name').textContent = "Guest User";
-                    document.getElementById('user-status').innerHTML = '<i class="fas fa-cloud"></i> Saved to Database';
+                    document.getElementById('user-name').textContent = "Guest";
+                    document.getElementById('user-status').innerHTML = '<i class="fas fa-cloud"></i> DB Active';
                     document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=Guest&background=0F766E&color=fff`;
                 } else {
-                    document.getElementById('user-name').textContent = user.displayName || "User";
-                    document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google Account';
+                    document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || "User";
+                    document.getElementById('user-status').innerHTML = '<i class="fas fa-check-circle"></i> Google';
                     document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=0F766E&color=fff`;
                 }
 
-                // Subscribe to Firestore for THIS user
                 subscribeToCloudData(user.uid);
             } else {
-                // User is null (e.g., Anon auth failed/disabled)
                 // Fallback to purely Local Storage Guest Mode
                 document.getElementById('user-info').classList.add('hidden');
                 document.getElementById('btn-login').classList.remove('hidden');
+                document.getElementById('mobile-logout-section').classList.add('hidden');
+                
                 if (unsubscribeFirestore) unsubscribeFirestore();
                 
-                // Fallback local storage check
                 const raw = localStorage.getItem('financeData');
                 transactions = raw ? JSON.parse(raw) : [];
                 updateUI();
@@ -518,14 +578,11 @@
         });
 
         // --- Data Management ---
-
-        // Cloud Firestore Listener
         let unsubscribeFirestore = null;
 
         function subscribeToCloudData(userId) {
             if (unsubscribeFirestore) unsubscribeFirestore();
 
-            // Using 'users' collection directly under the project since user provided custom credentials
             const q = query(collection(db, 'users', userId, 'transactions'));
             
             unsubscribeFirestore = onSnapshot(q, (snapshot) => {
@@ -537,40 +594,34 @@
                 updateUI();
             }, (error) => {
                 console.error("Firestore error:", error);
-                if (error.code !== 'permission-denied') {
-                    showToast("Sync Error", "Could not fetch cloud data.", "error");
-                }
             });
         }
 
         async function addTransaction(data) {
-            // Priority: Save to Cloud if user exists (Anon or Google)
             if (currentUser) {
                 try {
                     const ref = collection(db, 'users', currentUser.uid, 'transactions');
                     delete data.id; 
                     await addDoc(ref, data);
-                    showToast("Saved", "Transaction saved to Database.");
+                    showToast("Saved", "Saved to Database.");
                 } catch (e) {
                     console.error(e);
-                    showToast("Error", "Failed to save to database.", "error");
-                    // Fallback to local array just to update UI temporarily
+                    // Fallback UI update
                     data.id = "temp_" + Date.now();
                     transactions.push(data);
                     updateUI();
                 }
             } else {
-                // Extreme fallback
                 data.id = crypto.randomUUID();
                 transactions.push(data);
                 localStorage.setItem('financeData', JSON.stringify(transactions));
                 updateUI();
-                showToast("Saved", "Saved locally (Auth offline).");
+                showToast("Saved", "Saved locally.");
             }
         }
 
         async function deleteTransaction(id) {
-            if (confirm("Are you sure you want to delete this?")) {
+            if (confirm("Delete this transaction?")) {
                 if (currentUser) {
                     try {
                         await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
@@ -588,62 +639,47 @@
         }
 
         // --- UI Logic & Routing ---
-
         window.router = function(viewName) {
-            // Hide all views
             ['dashboard', 'expenses', 'income', 'export'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.add('hidden');
             });
-            // Show selected
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            
-            // Update Active Nav State
-            document.querySelectorAll('.nav-item').forEach(el => {
-                if(el.getAttribute('onclick').includes(viewName)) {
-                    el.classList.add('bg-brand-50', 'text-brand-700');
-                    el.classList.remove('text-gray-600');
-                } else {
-                    el.classList.remove('bg-brand-50', 'text-brand-700');
-                    el.classList.add('text-gray-600');
-                }
-            });
-
             if (viewName === 'dashboard') renderDashboard();
         }
 
         window.toggleMobileMenu = function() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                // Allow animation
+            } else {
+                menu.classList.add('hidden');
+            }
         }
 
         function updateUI() {
-            // Determine which view is active and re-render appropriate parts
             if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
-            if (!document.getElementById('view-expenses').classList.contains('hidden')) renderLists();
-            if (!document.getElementById('view-income').classList.contains('hidden')) renderLists();
+            renderLists(); // Always update lists for background views
         }
 
         // --- Dashboard & Charts ---
-
         window.changeMonth = function(offset) {
             currentMonth.setMonth(currentMonth.getMonth() + offset);
             renderDashboard();
         }
 
         function renderDashboard() {
-            // 1. Date Header
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             document.getElementById('current-month-display').textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
 
-            // 2. Filter Data for Month
             const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0); // Last day
+            const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
             
             const monthData = transactions.filter(t => {
                 const tDate = new Date(t.date);
                 return tDate >= start && tDate <= end;
             });
 
-            // 3. Calcs
             let income = 0;
             let expense = 0;
             const expenseCats = {};
@@ -663,34 +699,27 @@
 
             const net = income - expense;
 
-            // 4. Update DOM Stats
             document.getElementById('dash-income').textContent = `$${income.toFixed(2)}`;
             document.getElementById('dash-expense').textContent = `$${expense.toFixed(2)}`;
             document.getElementById('dash-balance').textContent = `$${net.toFixed(2)}`;
             document.getElementById('sidebar-balance').textContent = `$${net.toFixed(2)}`;
             
-            // Dynamic Insight
             const elInsight = document.getElementById('dash-insight');
-            if (net < 0) { elInsight.textContent = "You're spending more than you earn."; elInsight.className="text-xs text-red-500 mt-1 font-medium"; }
-            else if (net > 0) { elInsight.textContent = "Great job saving this month!"; elInsight.className="text-xs text-green-500 mt-1 font-medium"; }
-            else { elInsight.textContent = "Balanced budget."; elInsight.className="text-xs text-gray-500 mt-1 font-medium"; }
+            if (net < 0) { elInsight.textContent = "Over budget."; elInsight.className="text-[11px] text-red-500 mt-1 font-medium"; }
+            else { elInsight.textContent = "On track."; elInsight.className="text-[11px] text-green-500 mt-1 font-medium"; }
             
-            document.getElementById('dash-expense-count').textContent = `${todaysCount} transactions today`;
+            document.getElementById('dash-expense-count').textContent = `${todaysCount} today`;
 
-            // 5. Update Charts
             updateCharts(expenseCats, monthData);
 
-            // 6. Recent List
             const sorted = [...monthData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
             const listEl = document.getElementById('recent-transactions-list');
             listEl.innerHTML = sorted.map(t => `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4">${t.date}</td>
+                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                    <td class="px-6 py-4 text-gray-600">${t.date}</td>
                     <td class="px-6 py-4">
                         <span class="font-medium text-gray-900">${t.type === 'income' ? t.source : t.category}</span>
-                        <div class="text-xs text-gray-500">${t.type === 'income' ? '' : t.subcategory || ''}</div>
                     </td>
-                    <td class="px-6 py-4 text-xs text-gray-500">${t.note || t.description || '-'}</td>
                     <td class="px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                         ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
                     </td>
@@ -699,11 +728,9 @@
         }
 
         function updateCharts(categoryData, allMonthData) {
-            // Destroy old charts if exist
             if (charts.bar) charts.bar.destroy();
             if (charts.doughnut) charts.doughnut.destroy();
 
-            // Doughnut (Categories)
             const catLabels = Object.keys(categoryData);
             const catValues = Object.values(categoryData);
             const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899', '#8b5cf6', '#ef4444'];
@@ -722,14 +749,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 10, usePointStyle: true } }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
 
-            // Bar (Income vs Expense Daily optional, or just Total comparison)
-            // Let's do Daily Expense Trend
             const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
             const days = Array.from({length: daysInMonth}, (_, i) => i + 1);
             const dailyExp = new Array(daysInMonth).fill(0);
@@ -747,53 +770,40 @@
                 data: {
                     labels: days,
                     datasets: [{
-                        label: 'Daily Expenses',
+                        label: 'Exp',
                         data: dailyExp,
                         backgroundColor: '#14b8a6',
-                        borderRadius: 4
+                        borderRadius: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        // --- Form Handling & Lists ---
-
-        // Populate Subcategories
+        // --- Form Handling ---
         const catSelect = document.getElementById('exp-category');
         const subContainer = document.getElementById('subcategory-container');
         
         catSelect.addEventListener('change', (e) => {
             const main = e.target.value;
             const subs = CATEGORIES[main];
-            
-            let html = `<select id="exp-subcategory" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none">`;
+            let html = `<select id="exp-subcategory" class="w-full bg-gray-50 border-gray-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none transition">`;
             subs.forEach(s => html += `<option value="${s}">${s}</option>`);
             html += `</select>`;
-            
             subContainer.innerHTML = html;
-
-            // Handle "Custom" in the new dropdown
-            const subSelect = document.getElementById('exp-subcategory');
-            subSelect.addEventListener('change', (ev) => {
-                if (ev.target.value === 'Custom') {
-                    subContainer.innerHTML = `<input type="text" id="exp-subcategory" placeholder="Type custom subcategory" class="w-full border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 border p-2.5 outline-none" autofocus>`;
-                }
-            });
         });
 
-        // Add Expense
         document.getElementById('expense-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const subVal = document.getElementById('exp-subcategory').value;
-            
+            const subVal = document.getElementById('exp-subcategory').value || "General";
             const data = {
                 type: 'expense',
                 date: document.getElementById('exp-date').value,
@@ -803,14 +813,12 @@
                 description: document.getElementById('exp-desc').value,
                 timestamp: Date.now()
             };
-
             await addTransaction(data);
             e.target.reset();
-            document.getElementById('exp-date').valueAsDate = new Date(); // Reset date to today
+            document.getElementById('exp-date').valueAsDate = new Date();
             renderLists();
         });
 
-        // Add Income
         document.getElementById('income-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -821,7 +829,6 @@
                 note: document.getElementById('inc-note').value,
                 timestamp: Date.now()
             };
-
             await addTransaction(data);
             e.target.reset();
             document.getElementById('inc-date').valueAsDate = new Date();
@@ -829,7 +836,6 @@
         });
 
         window.renderLists = function() {
-            // Render Expense Table (Current Month)
             const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
             const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
             
@@ -838,52 +844,40 @@
                 return tDate >= start && tDate <= end;
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            // Expense List
             const expList = document.getElementById('expense-list-table');
             expList.innerHTML = monthData.filter(t => t.type === 'expense').map(t => `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="px-6 py-4">${t.date}</td>
                     <td class="px-6 py-4">
                         <div class="font-medium text-gray-900">${t.category}</div>
-                        <div class="text-xs text-gray-500">${t.subcategory} ${t.description ? '- ' + t.description : ''}</div>
+                        <div class="text-xs text-gray-500">${t.subcategory}</div>
                     </td>
                     <td class="px-6 py-4 text-right font-bold text-gray-700">$${parseFloat(t.amount).toFixed(2)}</td>
                     <td class="px-6 py-4 text-center">
-                        <button onclick="window.deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
 
-            // Income List
             const incList = document.getElementById('income-list-table');
             incList.innerHTML = monthData.filter(t => t.type === 'income').map(t => `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="px-6 py-4">${t.date}</td>
                     <td class="px-6 py-4">
                         <div class="font-medium text-gray-900">${t.source}</div>
-                        <div class="text-xs text-gray-500">${t.note || ''}</div>
                     </td>
                     <td class="px-6 py-4 text-right font-bold text-green-600">$${parseFloat(t.amount).toFixed(2)}</td>
                     <td class="px-6 py-4 text-center">
-                        <button onclick="window.deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        <button onclick="window.deleteTx('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
         
-        // Expose delete to global scope
         window.deleteTx = (id) => deleteTransaction(id);
 
-        window.resetForm = function(id) {
-            document.getElementById(id).reset();
-        }
-
-        // --- Export Logic ---
         window.exportData = function(format) {
-            if (transactions.length === 0) {
-                showToast("Empty", "No data to export.", "error");
-                return;
-            }
+            if (transactions.length === 0) return showToast("Empty", "No data.", "error");
 
             if (format === 'excel' || format === 'csv') {
                 const ws = XLSX.utils.json_to_sheet(transactions);
@@ -891,49 +885,24 @@
                 XLSX.utils.book_append_sheet(wb, ws, "FinanceData");
                 const ext = format === 'excel' ? 'xlsx' : 'csv';
                 XLSX.writeFile(wb, `Finance_Report.${ext}`);
-                showToast("Downloaded", `File exported as ${ext.toUpperCase()}`);
             } else if (format === 'pdf') {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                doc.setFontSize(18);
-                doc.text("Finance Report", 14, 22);
-                doc.setFontSize(11);
-                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-
-                const tableColumn = ["Date", "Type", "Category/Source", "Amount", "Note"];
+                doc.text("Finance Report", 14, 20);
+                const tableColumn = ["Date", "Type", "Category", "Amount"];
                 const tableRows = [];
-
                 transactions.forEach(t => {
-                    const reportData = [
-                        t.date,
-                        t.type.toUpperCase(),
-                        t.type === 'income' ? t.source : t.category,
-                        `$${t.amount}`,
-                        t.type === 'income' ? t.note : t.description
-                    ];
-                    tableRows.push(reportData);
+                    tableRows.push([t.date, t.type, t.category || t.source, t.amount]);
                 });
-
-                doc.autoTable({
-                    head: [tableColumn],
-                    body: tableRows,
-                    startY: 40,
-                });
-
+                doc.autoTable({ head: [tableColumn], body: tableRows, startY: 30 });
                 doc.save('Finance_Report.pdf');
-                showToast("Downloaded", "File exported as PDF");
             }
         }
 
         window.resetAllData = function() {
-            if(confirm("CRITICAL WARNING: This will permanently delete ALL your data. Are you sure?")) {
+            if(confirm("Permanently delete ALL data?")) {
                 if(currentUser) {
-                     // In a real app we would use a Batch delete or cloud function.
-                     // Here we alert the user as client-side mass deletion of subcollections is heavy.
-                     // But for this simple list, we can iterate:
                      transactions.forEach(t => deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', t.id)));
-                     showToast("Clearing...", "Deleting records from database...");
                 } else {
                     transactions = [];
                     localStorage.removeItem('financeData');
@@ -942,31 +911,16 @@
             }
         }
 
-        // --- Utilities ---
         function showToast(title, msg, type="success") {
             const el = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            
             document.getElementById('toast-title').textContent = title;
             document.getElementById('toast-msg').textContent = msg;
-            
-            if (type === 'error') {
-                icon.className = "fas fa-exclamation-circle text-red-500";
-            } else {
-                icon.className = "fas fa-check-circle text-green-500";
-            }
-
             el.classList.remove('translate-x-full');
-            setTimeout(() => {
-                el.classList.add('translate-x-full');
-            }, 3000);
+            setTimeout(() => { el.classList.add('translate-x-full'); }, 3000);
         }
 
-        // --- Init Defaults ---
         document.getElementById('exp-date').valueAsDate = new Date();
         document.getElementById('inc-date').valueAsDate = new Date();
-        
-        // Initial Render
         renderDashboard();
 
     </script>
