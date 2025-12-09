@@ -68,13 +68,16 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <!-- Currency Selector -->
-                <select id="currency-select" onchange="updateCurrency()" class="text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 border-none rounded-lg p-1.5 focus:ring-0 cursor-pointer font-bold">
-                    <option value="USD">USD ($)</option>
-                    <option value="PKR">PKR (₨)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                </select>
+                <!-- Global View Currency -->
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">View In</span>
+                    <select id="currency-select" onchange="updateCurrency()" class="text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 border-none rounded-lg p-1 focus:ring-0 cursor-pointer font-bold">
+                        <option value="USD">USD ($)</option>
+                        <option value="PKR">PKR (₨)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                </div>
 
                 <button onclick="toggleDarkMode()" class="p-2 text-gray-500 hover:text-yellow-500 transition">
                     <i id="theme-icon" class="fas fa-moon"></i>
@@ -134,13 +137,11 @@
             <div id="view-dashboard" class="fade-in space-y-6">
                 <!-- Controls Row -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <!-- Timeframe Selector -->
                     <div class="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-1 border dark:border-gray-700 flex">
                         <button onclick="setDashboardMode('month')" id="mode-month" class="px-4 py-2 rounded-md text-sm font-bold transition bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400">This Month</button>
                         <button onclick="setDashboardMode('all')" id="mode-all" class="px-4 py-2 rounded-md text-sm font-bold text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700 transition">All Time</button>
                     </div>
 
-                    <!-- Month Navigator (Only visible in 'month' mode) -->
                     <div id="month-navigator" class="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-1 flex items-center border dark:border-gray-700">
                         <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"><i class="fas fa-chevron-left text-xs"></i></button>
                         <span id="current-month-display" class="px-3 text-sm font-bold text-gray-800 dark:text-white min-w-[100px] text-center">Loading...</span>
@@ -206,7 +207,16 @@
                 <form id="expense-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <input type="date" id="exp-date" required class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
-                        <input type="number" id="exp-amount" placeholder="Amount" required min="0.01" step="0.01" class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                        <div class="flex gap-2">
+                            <input type="number" id="exp-amount" placeholder="Amount" required min="0.01" step="0.01" class="form-input w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                            <!-- Transaction Currency -->
+                            <select id="exp-currency" class="w-24 bg-gray-100 dark:bg-gray-600 border-none rounded-lg p-2 font-bold dark:text-white">
+                                <option value="USD">USD</option>
+                                <option value="PKR">PKR</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -252,7 +262,16 @@
                 <form id="income-form" class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <input type="date" id="inc-date" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
-                        <input type="number" id="inc-amount" placeholder="Amount" required min="0.01" step="0.01" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                        <div class="flex gap-2">
+                            <input type="number" id="inc-amount" placeholder="Amount" required min="0.01" step="0.01" class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
+                            <!-- Transaction Currency -->
+                            <select id="inc-currency" class="w-24 bg-gray-100 dark:bg-gray-600 border-none rounded-lg p-2 font-bold dark:text-white">
+                                <option value="USD">USD</option>
+                                <option value="PKR">PKR</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
                     </div>
                     <select id="inc-source" required class="w-full bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:text-white">
                         <option disabled selected>Select Source</option>
@@ -315,10 +334,10 @@
         let currentMonth = new Date();
         let charts = { bar: null, doughnut: null };
         let unsubscribeFirestore = null;
-        let dashboardMode = 'month'; // 'month' or 'all'
+        let dashboardMode = 'month'; 
         
-        // Currency Rates (Mock Real-time)
-        let currentCurrency = 'USD';
+        // Default to USD if null
+        let currentViewCurrency = 'USD'; 
         let exchangeRates = {
             USD: 1,
             PKR: 278.50,
@@ -337,13 +356,11 @@
             "Custom": []
         };
 
-        // --- AUTH & DATA LOGIC ---
+        // --- AUTH & DATA ---
         
-        // 1. Auth Listener
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
-                // LOGGED IN: Cloud Mode
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('btn-login').classList.add('hidden');
                 document.getElementById('mobile-logout-section').classList.remove('hidden');
@@ -353,20 +370,17 @@
                 
                 subscribeToCloud(user.uid);
             } else {
-                // GUEST: Local Mode
                 document.getElementById('user-info').classList.add('hidden');
                 document.getElementById('btn-login').classList.remove('hidden');
                 document.getElementById('mobile-logout-section').classList.add('hidden');
-                
-                if (unsubscribeFirestore) unsubscribeFirestore(); // Stop listening to cloud
+                if (unsubscribeFirestore) unsubscribeFirestore(); 
                 loadLocalData();
             }
         });
 
-        // 2. Fetch Rates
+        // Fetch real rates
         async function fetchRates() {
             try {
-                // Try fetching real rates (CORS might block this in some envs)
                 const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 const data = await res.json();
                 if(data && data.rates) {
@@ -375,16 +389,13 @@
                     if(data.rates.EUR) exchangeRates.EUR = data.rates.EUR;
                     if(data.rates.GBP) exchangeRates.GBP = data.rates.GBP;
                 }
-            } catch(e) {
-                console.log("Using static fallback rates");
-            }
+            } catch(e) { console.log("Using static rates"); }
             updateUI();
         }
         fetchRates();
 
-        // 3. Cloud Subscription (Real-time)
+        // ** CORRECT PATH: users/{uid}/transactions **
         function subscribeToCloud(uid) {
-            // Path: users/{uid}/transactions
             const q = collection(db, 'users', uid, 'transactions');
             unsubscribeFirestore = onSnapshot(q, (snapshot) => {
                 const data = [];
@@ -393,25 +404,27 @@
                 });
                 transactions = data;
                 updateUI();
-            }, (err) => console.error("Firestore read error:", err));
+            }, (err) => console.error("Firestore error:", err));
         }
 
-        // 4. Local Data Loader
         function loadLocalData() {
             const raw = localStorage.getItem('financeData');
             transactions = raw ? JSON.parse(raw) : [];
             updateUI();
         }
 
-        // 5. Save Transaction
+        // SAVE using specific transaction currency
         window.saveTransaction = async (data) => {
+            // We store the raw amount and the currency it was entered in.
+            // When viewing, we convert everything to the *Viewing Currency*.
+            
             if (currentUser) {
                 try {
                     await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), data);
                     showToast("Success", "Saved to Cloud");
                 } catch (e) {
                     console.error("Cloud save failed", e);
-                    showToast("Error", "Could not save to cloud", "error");
+                    showToast("Error", "Could not save", "error");
                 }
             } else {
                 data.id = crypto.randomUUID();
@@ -422,10 +435,8 @@
             }
         };
 
-        // 6. Delete Transaction
         window.deleteTx = async (id) => {
             if(!confirm("Delete this record?")) return;
-            
             if (currentUser) {
                 try {
                     await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
@@ -439,68 +450,60 @@
             }
         };
 
-        // --- HELPER: Currency Conversion ---
+        // --- CURRENCY CONVERSION ---
         window.updateCurrency = () => {
-            currentCurrency = document.getElementById('currency-select').value;
+            currentViewCurrency = document.getElementById('currency-select').value;
             updateUI();
         }
 
-        function convertAmount(tx) {
-            const targetRate = exchangeRates[currentCurrency] || 1;
+        // Converts a transaction object to the current VIEWING currency value
+        function getConvertedAmount(tx) {
+            // 1. Determine base value in USD
+            let amountInUSD = 0;
             
-            // If data has 'currency', convert from that. Else assume it's USD.
-            let baseAmountUSD = parseFloat(tx.amount);
-            
-            // Logic: The 'amount' in DB is treated as "raw entered value".
-            // If there's a 'currency' field, we normalize to USD first.
-            // If no 'currency' field (legacy data), we assume it IS USD (or whatever base).
             if (tx.currency && exchangeRates[tx.currency]) {
-                const sourceRate = exchangeRates[tx.currency];
-                baseAmountUSD = parseFloat(tx.amount) / sourceRate; // Normalize to USD
-            } 
-            
-            return baseAmountUSD * targetRate;
+                // If tx has a currency tag, convert its 'amount' to USD first
+                amountInUSD = parseFloat(tx.amount) / exchangeRates[tx.currency];
+            } else {
+                // Legacy data (no currency tag) -> Assumed USD
+                amountInUSD = parseFloat(tx.amount);
+            }
+
+            // 2. Convert USD to Viewing Currency
+            const targetRate = exchangeRates[currentViewCurrency] || 1;
+            return amountInUSD * targetRate;
         }
 
         function formatMoney(val) {
-            const symbol = currentCurrency === 'USD' ? '$' : currentCurrency === 'PKR' ? '₨' : currentCurrency === 'EUR' ? '€' : '£';
+            const symbol = currentViewCurrency === 'USD' ? '$' : currentViewCurrency === 'PKR' ? '₨' : currentViewCurrency === 'EUR' ? '€' : '£';
             return `${symbol}${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
-        // --- DASHBOARD MODE ---
+        // --- UI LOGIC ---
         window.setDashboardMode = (mode) => {
             dashboardMode = mode;
-            // Update buttons
             const btnMonth = document.getElementById('mode-month');
             const btnAll = document.getElementById('mode-all');
             const monthNav = document.getElementById('month-navigator');
             
             if(mode === 'month') {
-                btnMonth.classList.add('bg-brand-50', 'text-brand-700', 'dark:bg-brand-900/20', 'dark:text-brand-400');
-                btnMonth.classList.remove('text-gray-500', 'dark:text-gray-400');
-                btnAll.classList.remove('bg-brand-50', 'text-brand-700', 'dark:bg-brand-900/20', 'dark:text-brand-400');
-                btnAll.classList.add('text-gray-500', 'dark:text-gray-400');
+                btnMonth.className = "px-4 py-2 rounded-md text-sm font-bold transition bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400";
+                btnAll.className = "px-4 py-2 rounded-md text-sm font-bold text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700 transition";
                 monthNav.classList.remove('hidden');
             } else {
-                btnAll.classList.add('bg-brand-50', 'text-brand-700', 'dark:bg-brand-900/20', 'dark:text-brand-400');
-                btnAll.classList.remove('text-gray-500', 'dark:text-gray-400');
-                btnMonth.classList.remove('bg-brand-50', 'text-brand-700', 'dark:bg-brand-900/20', 'dark:text-brand-400');
-                btnMonth.classList.add('text-gray-500', 'dark:text-gray-400');
+                btnAll.className = "px-4 py-2 rounded-md text-sm font-bold transition bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400";
+                btnMonth.className = "px-4 py-2 rounded-md text-sm font-bold text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700 transition";
                 monthNav.classList.add('hidden');
             }
             updateUI();
         }
 
-        // --- UI & FORMS ---
-
-        // Toggle Custom Input
         const catSelect = document.getElementById('exp-category');
         if (catSelect) {
             catSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
                 const customInput = document.getElementById('exp-custom-cat');
                 const subContainer = document.getElementById('exp-sub-container');
-                
                 if (val === 'Custom') {
                     customInput.classList.remove('hidden');
                     customInput.required = true;
@@ -517,87 +520,83 @@
         }
 
         // Add Expense
-        const expenseForm = document.getElementById('expense-form');
-        if (expenseForm) {
-            expenseForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('btn-save-exp');
-                const originalText = btn.innerText;
-                btn.innerText = "Saving...";
-                
-                const catSelect = document.getElementById('exp-category').value;
-                const category = catSelect === 'Custom' ? document.getElementById('exp-custom-cat').value : catSelect;
-                const subcategory = document.getElementById('exp-subcategory').value || "";
+        document.getElementById('expense-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-exp');
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            
+            const catSelect = document.getElementById('exp-category').value;
+            const category = catSelect === 'Custom' ? document.getElementById('exp-custom-cat').value : catSelect;
+            const subcategory = document.getElementById('exp-subcategory').value || "";
+            const currency = document.getElementById('exp-currency').value;
 
-                const data = {
-                    type: 'expense',
-                    date: document.getElementById('exp-date').value,
-                    amount: parseFloat(document.getElementById('exp-amount').value),
-                    currency: currentCurrency, // Save which currency user typed in
-                    category,
-                    subcategory,
-                    note: document.getElementById('exp-note').value,
-                    timestamp: Date.now()
-                };
+            const data = {
+                type: 'expense',
+                date: document.getElementById('exp-date').value,
+                amount: parseFloat(document.getElementById('exp-amount').value),
+                currency: currency, 
+                category,
+                subcategory,
+                note: document.getElementById('exp-note').value,
+                timestamp: Date.now()
+            };
 
-                await window.saveTransaction(data);
-                
-                btn.innerText = "Saved!";
-                btn.classList.add("bg-green-600");
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.classList.remove("bg-green-600");
-                    e.target.reset();
-                    document.getElementById('exp-custom-cat').classList.add('hidden');
-                    document.getElementById('exp-date').valueAsDate = new Date();
-                    router('dashboard'); 
-                }, 1000);
-            });
-        }
+            await window.saveTransaction(data);
+            
+            btn.innerText = "Saved!";
+            btn.classList.add("bg-green-600");
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove("bg-green-600");
+                e.target.reset();
+                document.getElementById('exp-custom-cat').classList.add('hidden');
+                document.getElementById('exp-date').valueAsDate = new Date();
+                router('dashboard'); 
+            }, 1000);
+        });
 
         // Add Income
-        const incomeForm = document.getElementById('income-form');
-        if (incomeForm) {
-            incomeForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('btn-save-inc');
-                const originalText = btn.innerText;
-                btn.innerText = "Saving...";
+        document.getElementById('income-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-inc');
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            
+            const currency = document.getElementById('inc-currency').value;
 
-                const data = {
-                    type: 'income',
-                    date: document.getElementById('inc-date').value,
-                    amount: parseFloat(document.getElementById('inc-amount').value),
-                    currency: currentCurrency,
-                    source: document.getElementById('inc-source').value,
-                    note: document.getElementById('inc-note').value,
-                    timestamp: Date.now()
-                };
+            const data = {
+                type: 'income',
+                date: document.getElementById('inc-date').value,
+                amount: parseFloat(document.getElementById('inc-amount').value),
+                currency: currency,
+                source: document.getElementById('inc-source').value,
+                note: document.getElementById('inc-note').value,
+                timestamp: Date.now()
+            };
 
-                await window.saveTransaction(data);
-                
-                btn.innerText = "Saved!";
-                btn.classList.remove("bg-green-600"); 
-                btn.classList.add("bg-blue-600"); 
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.classList.remove("bg-blue-600");
-                    btn.classList.add("bg-green-600");
-                    e.target.reset();
-                    document.getElementById('inc-date').valueAsDate = new Date();
-                    router('dashboard');
-                }, 1000);
-            });
-        }
+            await window.saveTransaction(data);
+            
+            btn.innerText = "Saved!";
+            btn.classList.remove("bg-green-600"); 
+            btn.classList.add("bg-blue-600"); 
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove("bg-blue-600");
+                btn.classList.add("bg-green-600");
+                e.target.reset();
+                document.getElementById('inc-date').valueAsDate = new Date();
+                router('dashboard');
+            }, 1000);
+        });
 
-        // --- GLOBAL UTILS ---
         window.router = (view) => {
             ['dashboard', 'expenses', 'income', 'export'].forEach(id => {
                 const el = document.getElementById(`view-${id}`);
-                if (el) el.classList.add('hidden');
+                if(el) el.classList.add('hidden');
             });
-            const viewEl = document.getElementById(`view-${view}`);
-            if (viewEl) viewEl.classList.remove('hidden');
+            const v = document.getElementById(`view-${view}`);
+            if(v) v.classList.remove('hidden');
             if(view === 'dashboard') updateUI();
         };
 
@@ -631,7 +630,7 @@
         }
 
         window.handleLogout = async () => {
-            if(confirm("Logout? Local data will be shown.")) {
+            if(confirm("Logout?")) {
                 await signOut(auth);
             }
         };
@@ -649,7 +648,6 @@
             }
         };
 
-        // --- CHART & DASHBOARD LOGIC ---
         window.changeMonth = (offset) => {
             currentMonth.setMonth(currentMonth.getMonth() + offset);
             updateUI();
@@ -661,38 +659,32 @@
         }
 
         function renderDashboard() {
-            // Dashboard Mode Logic
             let filteredData = [];
             
             if (dashboardMode === 'month') {
                 const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
                 const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
                 
-                // Date Header
                 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                const currentMonthDisplay = document.getElementById('current-month-display');
-                if (currentMonthDisplay) {
-                    currentMonthDisplay.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-                }
+                const disp = document.getElementById('current-month-display');
+                if(disp) disp.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
                 
                 filteredData = transactions.filter(t => {
                     const d = new Date(t.date);
                     return d >= start && d <= end;
                 });
             } else {
-                // All Time
-                const currentMonthDisplay = document.getElementById('current-month-display');
-                if (currentMonthDisplay) currentMonthDisplay.textContent = "All Time";
+                const disp = document.getElementById('current-month-display');
+                if(disp) disp.textContent = "All Time";
                 filteredData = [...transactions];
             }
 
-            // Calcs
             let income = 0, expense = 0, todayExp = 0;
             const cats = {};
             const today = new Date().toISOString().split('T')[0];
 
             filteredData.forEach(t => {
-                const converted = convertAmount(t);
+                const converted = getConvertedAmount(t);
                 
                 if(t.type === 'income') income += converted;
                 else {
@@ -703,31 +695,30 @@
             });
 
             const incomeEl = document.getElementById('dash-income');
-            if (incomeEl) incomeEl.textContent = formatMoney(income);
+            if(incomeEl) incomeEl.textContent = formatMoney(income);
             const expenseEl = document.getElementById('dash-expense');
-            if (expenseEl) expenseEl.textContent = formatMoney(expense);
+            if(expenseEl) expenseEl.textContent = formatMoney(expense);
             const balanceEl = document.getElementById('dash-balance');
-            if (balanceEl) balanceEl.textContent = formatMoney(income - expense);
-            const todayExpEl = document.getElementById('dash-expense-count');
-            if (todayExpEl) todayExpEl.textContent = dashboardMode === 'month' ? `${todayExp} today` : `${filteredData.length} records`;
+            if(balanceEl) balanceEl.textContent = formatMoney(income - expense);
+            const countEl = document.getElementById('dash-expense-count');
+            if(countEl) countEl.textContent = dashboardMode === 'month' ? `${todayExp} today` : `${filteredData.length} records`;
 
             const insight = document.getElementById('dash-insight');
-            if (insight) {
+            if(insight) {
                 if(income > expense) { insight.textContent = "Savings on track"; insight.className="text-xs mt-1 font-bold text-green-500"; }
                 else { insight.textContent = "Over budget"; insight.className="text-xs mt-1 font-bold text-red-500"; }
             }
 
             renderCharts(cats, filteredData);
             
-            // Recent List (Last 5 of filtered or last 5 overall)
             const sorted = [...filteredData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
             const recentList = document.getElementById('recent-transactions-list');
-            if (recentList) {
+            if(recentList) {
                 recentList.innerHTML = sorted.map(t => `
                     <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td class="p-3 text-gray-600 dark:text-gray-300">${t.date}</td>
                         <td class="p-3 font-medium dark:text-white">${t.category || t.source}</td>
-                        <td class="p-3 text-right font-bold ${t.type==='income'?'text-green-500':'text-red-500'}">${t.type==='income'?'+':'-'}${formatMoney(convertAmount(t))}</td>
+                        <td class="p-3 text-right font-bold ${t.type==='income'?'text-green-500':'text-red-500'}">${t.type==='income'?'+':'-'}${formatMoney(getConvertedAmount(t))}</td>
                     </tr>
                 `).join('');
             }
@@ -737,14 +728,12 @@
             if(charts.bar) charts.bar.destroy();
             if(charts.doughnut) charts.doughnut.destroy();
 
-            // Convert values for chart
             const catLabels = Object.keys(cats);
             const catValues = Object.values(cats); 
 
             const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899'];
             const textColor = document.documentElement.classList.contains('dark') ? '#fff' : '#333';
 
-            // Doughnut
             const ctxD = document.getElementById('doughnutChart').getContext('2d');
             charts.doughnut = new Chart(ctxD, {
                 type: 'doughnut',
@@ -759,17 +748,16 @@
                 }
             });
 
-            // Bar - aggregate logic differs based on view
-            // Simple approach: Last 30 transactions or days
-            const labels = data.slice(0, 30).map(t => t.date.substring(5)); // just mm-dd
-            const values = data.slice(0, 30).map(t => (t.type === 'expense' ? convertAmount(t) : 0));
+            const days = Array.from({length: new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate()}, (_, i) => i+1);
+            const daily = new Array(days.length).fill(0);
+            data.filter(t => t.type === 'expense').forEach(t => daily[new Date(t.date).getDate()-1] += getConvertedAmount(t));
 
             const ctxB = document.getElementById('barChart').getContext('2d');
             charts.bar = new Chart(ctxB, {
                 type: 'bar',
                 data: {
-                    labels: labels, // Simplified
-                    datasets: [{ label: 'Expenses', data: values, backgroundColor: '#14b8a6', borderRadius: 2 }]
+                    labels: days,
+                    datasets: [{ label: 'Exp', data: daily, backgroundColor: '#14b8a6', borderRadius: 2 }]
                 },
                 options: {
                     responsive: true, 
@@ -787,11 +775,9 @@
             const listExp = document.getElementById('expense-list-table');
             const listInc = document.getElementById('income-list-table');
             
-            // Show all data or filtered by dashboard mode? User requested just filter in lists manually
-            // We'll show all sorted by date by default in lists, user can filter using the specific list filters
             const data = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            if (listExp) {
+            if(listExp) {
                 listExp.innerHTML = data.filter(t => t.type === 'expense').map(t => `
                     <tr class="border-b dark:border-gray-700">
                         <td class="p-3 dark:text-gray-300">${t.date}</td>
@@ -799,47 +785,58 @@
                             <div class="font-bold dark:text-white">${t.category}</div>
                             <div class="text-xs text-gray-500">${t.subcategory}</div>
                         </td>
-                        <td class="p-3 text-right font-bold text-gray-700 dark:text-gray-200">${formatMoney(convertAmount(t))}</td>
+                        <td class="p-3 text-right font-bold text-gray-700 dark:text-gray-200">${formatMoney(getConvertedAmount(t))}</td>
                         <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `).join('');
             }
 
-            if (listInc) {
+            if(listInc) {
                 listInc.innerHTML = data.filter(t => t.type === 'income').map(t => `
                     <tr class="border-b dark:border-gray-700">
                         <td class="p-3 dark:text-gray-300">${t.date}</td>
                         <td class="p-3 font-bold dark:text-white">${t.source}</td>
-                        <td class="p-3 text-right font-bold text-green-500">${formatMoney(convertAmount(t))}</td>
+                        <td class="p-3 text-right font-bold text-green-500">${formatMoney(getConvertedAmount(t))}</td>
                         <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `).join('');
             }
         };
 
-        // Export/Toast
         window.showToast = (title, msg) => {
             const el = document.getElementById('toast');
-            if (!el) return;
-            const titleEl = document.getElementById('toast-title');
-            const msgEl = document.getElementById('toast-msg');
-            if (titleEl) titleEl.innerText = title;
-            if (msgEl) msgEl.innerText = msg;
+            if(!el) return;
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
             el.classList.remove('translate-x-full');
             setTimeout(() => el.classList.add('translate-x-full'), 3000);
         };
 
-        // Fixed Exports
         window.exportData = (type) => {
             if(!transactions.length) return showToast("Empty", "No data to export");
             
-            const exportData = transactions.map(t => ({
-                Date: t.date,
-                Type: t.type.toUpperCase(),
-                Category: t.category || t.source,
-                Amount: formatMoney(convertAmount(t)),
-                Note: t.note || ""
-            }));
+            // Calculate total for export based on CURRENT viewing currency
+            let totalAmount = 0;
+            const exportData = transactions.map(t => {
+                const val = getConvertedAmount(t);
+                totalAmount += (t.type === 'income' ? val : -val); // Income +, Expense -
+                return {
+                    Date: t.date,
+                    Type: t.type.toUpperCase(),
+                    Category: t.category || t.source,
+                    Amount: formatMoney(val),
+                    Note: t.note || ""
+                };
+            });
+
+            // Add Total Row
+            exportData.push({
+                Date: 'TOTAL',
+                Type: '',
+                Category: '',
+                Amount: formatMoney(totalAmount),
+                Note: ''
+            });
 
             if(type === 'csv' || type === 'excel') {
                 const ws = XLSX.utils.json_to_sheet(exportData);
@@ -847,9 +844,9 @@
                 XLSX.utils.book_append_sheet(wb, ws, "Transactions");
                 XLSX.writeFile(wb, `Finance_Report.${type === 'excel' ? 'xlsx' : 'csv'}`);
             } else {
-                const { jsPDF } = window.jspdf; // Access from window correctly
+                const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                doc.text("Finance Report", 14, 20);
+                doc.text(`Finance Report (${currentViewCurrency})`, 14, 20);
                 doc.autoTable({
                     head: [['Date', 'Type', 'Category', 'Amount', 'Note']],
                     body: exportData.map(t => Object.values(t)),
@@ -859,11 +856,10 @@
             }
         };
 
-        // Init defaults
         const expDate = document.getElementById('exp-date');
-        if (expDate) expDate.valueAsDate = new Date();
+        if(expDate) expDate.valueAsDate = new Date();
         const incDate = document.getElementById('inc-date');
-        if (incDate) incDate.valueAsDate = new Date();
+        if(incDate) incDate.valueAsDate = new Date();
         
         if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
 
