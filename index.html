@@ -299,7 +299,10 @@
                         <button onclick="document.getElementById('exp-filters').classList.toggle('hidden')" class="text-sm text-brand-600 font-bold"><i class="fas fa-filter"></i> Filter</button>
                     </div>
                     <div id="exp-filters" class="hidden p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-4 border-b dark:border-gray-700">
-                        <select id="filter-exp-cat" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white"><option value="All">All Categories</option></select>
+                        <select id="filter-exp-cat" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
+                            <option value="All">All Categories</option>
+                            <!-- Options populated dynamically -->
+                        </select>
                         <input type="date" id="filter-exp-date" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
                     </div>
                     <div class="overflow-x-auto"><table class="w-full text-sm text-left"><tbody id="expense-list-table" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody></table></div>
@@ -344,7 +347,7 @@
                     <div id="inc-filters" class="hidden p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-4 border-b dark:border-gray-700">
                         <select id="filter-inc-source" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
                             <option value="All">All Sources</option>
-                            <option>Salary</option><option>Freelance</option><option>Business</option><option>Gift</option><option>Other</option>
+                            <!-- Options populated dynamically -->
                         </select>
                         <input type="date" id="filter-inc-date" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
                     </div>
@@ -553,6 +556,38 @@
             updateUI();
         }
 
+        // POPULATE FILTERS DYNAMICALLY
+        function populateFilters() {
+            // Expenses Categories
+            const expSelect = document.getElementById('filter-exp-cat');
+            if(expSelect) {
+                const currentVal = expSelect.value;
+                const uniqueCats = new Set([...Object.keys(CATEGORIES).filter(c => c !== 'Custom'), ...transactions.filter(t => t.type === 'expense').map(t => t.category)]);
+                
+                let html = '<option value="All">All Categories</option>';
+                uniqueCats.forEach(cat => {
+                    html += `<option value="${cat}">${cat}</option>`;
+                });
+                expSelect.innerHTML = html;
+                expSelect.value = Array.from(expSelect.options).some(o => o.value === currentVal) ? currentVal : 'All';
+            }
+
+            // Income Sources
+            const incSelect = document.getElementById('filter-inc-source');
+            if(incSelect) {
+                const currentVal = incSelect.value;
+                const defaultSources = ['Salary', 'Freelance', 'Business', 'Gift', 'Other'];
+                const uniqueSources = new Set([...defaultSources, ...transactions.filter(t => t.type === 'income').map(t => t.source)]);
+                
+                let html = '<option value="All">All Sources</option>';
+                uniqueSources.forEach(src => {
+                    html += `<option value="${src}">${src}</option>`;
+                });
+                incSelect.innerHTML = html;
+                incSelect.value = Array.from(incSelect.options).some(o => o.value === currentVal) ? currentVal : 'All';
+            }
+        }
+
         const catSelect = document.getElementById('exp-category');
         if (catSelect) {
             catSelect.addEventListener('change', (e) => {
@@ -709,6 +744,7 @@
         };
 
         function updateUI() {
+            populateFilters();
             renderDashboard();
             renderLists();
         }
