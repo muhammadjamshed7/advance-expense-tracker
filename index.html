@@ -169,10 +169,12 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700 lg:col-span-2">
                         <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Spending Trend</h3>
-                        <div class="h-64"><canvas id="barChart"></canvas></div>
+                        <div class="h-60 relative w-full">
+                            <canvas id="barChart"></canvas>
+                        </div>
                     </div>
                     <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border dark:border-gray-700">
-                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Breakdown</h3>
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-sm uppercase">Categories</h3>
                         <div class="h-64 flex justify-center"><canvas id="doughnutChart"></canvas></div>
                     </div>
                 </div>
@@ -306,7 +308,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "advaceexpense"; // Using this to nest correctly in prompt instructions
 
         // --- STATE ---
         let currentUser = null;
@@ -383,8 +384,8 @@
 
         // 3. Cloud Subscription (Real-time)
         function subscribeToCloud(uid) {
-            // Path: artifacts/{appId}/users/{uid}/transactions
-            const q = collection(db, 'artifacts', appId, 'users', uid, 'transactions');
+            // Path: users/{uid}/transactions
+            const q = collection(db, 'users', uid, 'transactions');
             unsubscribeFirestore = onSnapshot(q, (snapshot) => {
                 const data = [];
                 snapshot.forEach(doc => {
@@ -406,7 +407,7 @@
         window.saveTransaction = async (data) => {
             if (currentUser) {
                 try {
-                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions'), data);
+                    await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), data);
                     showToast("Success", "Saved to Cloud");
                 } catch (e) {
                     console.error("Cloud save failed", e);
@@ -427,7 +428,7 @@
             
             if (currentUser) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', id));
+                    await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
                     showToast("Deleted", "Removed from Cloud");
                 } catch(e) { console.error(e); }
             } else {
@@ -438,17 +439,32 @@
             }
         };
 
-        // --- HELPER: Currency Formatter ---
+        // --- HELPER: Currency Conversion ---
         window.updateCurrency = () => {
             currentCurrency = document.getElementById('currency-select').value;
             updateUI();
         }
 
-        function formatMoney(amountInUSD) {
-            const rate = exchangeRates[currentCurrency] || 1;
-            const converted = amountInUSD * rate;
+        function convertAmount(tx) {
+            const targetRate = exchangeRates[currentCurrency] || 1;
+            
+            // If data has 'currency', convert from that. Else assume it's USD.
+            let baseAmountUSD = parseFloat(tx.amount);
+            
+            // Logic: The 'amount' in DB is treated as "raw entered value".
+            // If there's a 'currency' field, we normalize to USD first.
+            // If no 'currency' field (legacy data), we assume it IS USD (or whatever base).
+            if (tx.currency && exchangeRates[tx.currency]) {
+                const sourceRate = exchangeRates[tx.currency];
+                baseAmountUSD = parseFloat(tx.amount) / sourceRate; // Normalize to USD
+            } 
+            
+            return baseAmountUSD * targetRate;
+        }
+
+        function formatMoney(val) {
             const symbol = currentCurrency === 'USD' ? '$' : currentCurrency === 'PKR' ? '₨' : currentCurrency === 'EUR' ? '€' : '£';
-            return `${symbol}${converted.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            return `${symbol}${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
         // --- DASHBOARD MODE ---
@@ -513,22 +529,11 @@
                 const category = catSelect === 'Custom' ? document.getElementById('exp-custom-cat').value : catSelect;
                 const subcategory = document.getElementById('exp-subcategory').value || "";
 
-                // Important: Store amount in base USD (or generic unit) for consistent conversion
-                // Here we assume input is in currentCurrency, so we convert back to base 1 (USD) for storage?
-                // Or simpler: Store raw amount and currency at time of entry?
-                // For simplicity in this app, let's assume user enters value in selected currency, 
-                // but we store it normalized to USD so charts work.
-                
-                const rawAmount = parseFloat(document.getElementById('exp-amount').value);
-                const rate = exchangeRates[currentCurrency] || 1;
-                const amountInUSD = rawAmount / rate; 
-
                 const data = {
                     type: 'expense',
                     date: document.getElementById('exp-date').value,
-                    amount: amountInUSD, 
-                    originalAmount: rawAmount,
-                    currency: currentCurrency,
+                    amount: parseFloat(document.getElementById('exp-amount').value),
+                    currency: currentCurrency, // Save which currency user typed in
                     category,
                     subcategory,
                     note: document.getElementById('exp-note').value,
@@ -559,15 +564,10 @@
                 const originalText = btn.innerText;
                 btn.innerText = "Saving...";
 
-                const rawAmount = parseFloat(document.getElementById('inc-amount').value);
-                const rate = exchangeRates[currentCurrency] || 1;
-                const amountInUSD = rawAmount / rate; 
-
                 const data = {
                     type: 'income',
                     date: document.getElementById('inc-date').value,
-                    amount: amountInUSD,
-                    originalAmount: rawAmount,
+                    amount: parseFloat(document.getElementById('inc-amount').value),
                     currency: currentCurrency,
                     source: document.getElementById('inc-source').value,
                     note: document.getElementById('inc-note').value,
@@ -639,7 +639,7 @@
         window.resetAllData = async () => {
             if(!confirm("Permanently delete ALL data?")) return;
             if(currentUser) {
-                transactions.forEach(t => deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', t.id)));
+                transactions.forEach(t => deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', t.id)));
                 showToast("Cleared", "Database wiped");
             } else {
                 localStorage.removeItem('financeData');
@@ -692,11 +692,12 @@
             const today = new Date().toISOString().split('T')[0];
 
             filteredData.forEach(t => {
-                const amt = parseFloat(t.amount); // stored in USD
-                if(t.type === 'income') income += amt;
+                const converted = convertAmount(t);
+                
+                if(t.type === 'income') income += converted;
                 else {
-                    expense += amt;
-                    cats[t.category] = (cats[t.category] || 0) + amt;
+                    expense += converted;
+                    cats[t.category] = (cats[t.category] || 0) + converted;
                     if(t.date === today) todayExp++;
                 }
             });
@@ -726,7 +727,7 @@
                     <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td class="p-3 text-gray-600 dark:text-gray-300">${t.date}</td>
                         <td class="p-3 font-medium dark:text-white">${t.category || t.source}</td>
-                        <td class="p-3 text-right font-bold ${t.type==='income'?'text-green-500':'text-red-500'}">${t.type==='income'?'+':'-'}${formatMoney(t.amount)}</td>
+                        <td class="p-3 text-right font-bold ${t.type==='income'?'text-green-500':'text-red-500'}">${t.type==='income'?'+':'-'}${formatMoney(convertAmount(t))}</td>
                     </tr>
                 `).join('');
             }
@@ -738,8 +739,7 @@
 
             // Convert values for chart
             const catLabels = Object.keys(cats);
-            const rate = exchangeRates[currentCurrency] || 1;
-            const catValues = Object.values(cats).map(v => v * rate); // Convert for display
+            const catValues = Object.values(cats); 
 
             const colors = ['#14b8a6', '#f59e0b', '#0ea5e9', '#6366f1', '#ec4899'];
             const textColor = document.documentElement.classList.contains('dark') ? '#fff' : '#333';
@@ -762,7 +762,7 @@
             // Bar - aggregate logic differs based on view
             // Simple approach: Last 30 transactions or days
             const labels = data.slice(0, 30).map(t => t.date.substring(5)); // just mm-dd
-            const values = data.slice(0, 30).map(t => (t.type === 'expense' ? t.amount * rate : 0));
+            const values = data.slice(0, 30).map(t => (t.type === 'expense' ? convertAmount(t) : 0));
 
             const ctxB = document.getElementById('barChart').getContext('2d');
             charts.bar = new Chart(ctxB, {
@@ -799,7 +799,7 @@
                             <div class="font-bold dark:text-white">${t.category}</div>
                             <div class="text-xs text-gray-500">${t.subcategory}</div>
                         </td>
-                        <td class="p-3 text-right font-bold text-gray-700 dark:text-gray-200">${formatMoney(t.amount)}</td>
+                        <td class="p-3 text-right font-bold text-gray-700 dark:text-gray-200">${formatMoney(convertAmount(t))}</td>
                         <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `).join('');
@@ -810,7 +810,7 @@
                     <tr class="border-b dark:border-gray-700">
                         <td class="p-3 dark:text-gray-300">${t.date}</td>
                         <td class="p-3 font-bold dark:text-white">${t.source}</td>
-                        <td class="p-3 text-right font-bold text-green-500">${formatMoney(t.amount)}</td>
+                        <td class="p-3 text-right font-bold text-green-500">${formatMoney(convertAmount(t))}</td>
                         <td class="p-3 text-center"><button onclick="deleteTx('${t.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `).join('');
@@ -833,13 +833,11 @@
         window.exportData = (type) => {
             if(!transactions.length) return showToast("Empty", "No data to export");
             
-            // Format data for export (convert back to display currency)
-            const rate = exchangeRates[currentCurrency] || 1;
             const exportData = transactions.map(t => ({
                 Date: t.date,
                 Type: t.type.toUpperCase(),
                 Category: t.category || t.source,
-                Amount: (t.amount * rate).toFixed(2) + " " + currentCurrency,
+                Amount: formatMoney(convertAmount(t)),
                 Note: t.note || ""
             }));
 
