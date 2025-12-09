@@ -19,7 +19,7 @@
     <meta property="og:url" content="https://advance-expense-tracker-sigma.vercel.app/">
     <meta property="og:title" content="Advanced Finance Tracker - Smart Money Management">
     <meta property="og:description" content="Manage your personal finances effortlessly. Track expenses, income, and view detailed spending reports with multi-currency support.">
-    <meta property="og:image" content="https://advance-expense-tracker-sigma.vercel.app/og-image.jpg"> <!-- Ensure you have an image at this path or replace URL -->
+    <meta property="og:image" content="https://advance-expense-tracker-sigma.vercel.app/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
@@ -37,7 +37,7 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://advance-expense-tracker-sigma.vercel.app/">
 
-    <!-- Structured Data (JSON-LD) for Google -->
+    <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -335,8 +335,19 @@
                     <button type="submit" id="btn-save-inc" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition">Save Income</button>
                 </form>
 
+                <!-- Income Filter Section -->
                 <div class="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border dark:border-gray-700 overflow-hidden">
-                    <h3 class="p-4 font-bold border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white">History</h3>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold dark:text-white">History</h3>
+                        <button onclick="document.getElementById('inc-filters').classList.toggle('hidden')" class="text-sm text-brand-600 font-bold"><i class="fas fa-filter"></i> Filter</button>
+                    </div>
+                    <div id="inc-filters" class="hidden p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-4 border-b dark:border-gray-700">
+                        <select id="filter-inc-source" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
+                            <option value="All">All Sources</option>
+                            <option>Salary</option><option>Freelance</option><option>Business</option><option>Gift</option><option>Other</option>
+                        </select>
+                        <input type="date" id="filter-inc-date" onchange="renderLists()" class="p-2 rounded bg-white dark:bg-gray-700 dark:text-white">
+                    </div>
                     <div class="overflow-x-auto"><table class="w-full text-sm text-left"><tbody id="income-list-table" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody></table></div>
                 </div>
             </div>
@@ -469,9 +480,6 @@
 
         // SAVE using specific transaction currency
         window.saveTransaction = async (data) => {
-            // We store the raw amount and the currency it was entered in.
-            // When viewing, we convert everything to the *Viewing Currency*.
-            
             if (currentUser) {
                 try {
                     await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), data);
@@ -510,20 +518,13 @@
             updateUI();
         }
 
-        // Converts a transaction object to the current VIEWING currency value
         function getConvertedAmount(tx) {
-            // 1. Determine base value in USD
             let amountInUSD = 0;
-            
             if (tx.currency && exchangeRates[tx.currency]) {
-                // If tx has a currency tag, convert its 'amount' to USD first
                 amountInUSD = parseFloat(tx.amount) / exchangeRates[tx.currency];
             } else {
-                // Legacy data (no currency tag) -> Assumed USD
                 amountInUSD = parseFloat(tx.amount);
             }
-
-            // 2. Convert USD to Viewing Currency
             const targetRate = exchangeRates[currentViewCurrency] || 1;
             return amountInUSD * targetRate;
         }
@@ -829,10 +830,24 @@
             const listExp = document.getElementById('expense-list-table');
             const listInc = document.getElementById('income-list-table');
             
-            const data = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
+            // Explicitly filter based on dropdown values
+            const expCatFilter = document.getElementById('filter-exp-cat').value;
+            const expDateFilter = document.getElementById('filter-exp-date').value;
+            const incSourceFilter = document.getElementById('filter-inc-source').value;
+            const incDateFilter = document.getElementById('filter-inc-date').value;
+
+            // Sort all transactions by date descending
+            const allSorted = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
 
             if(listExp) {
-                listExp.innerHTML = data.filter(t => t.type === 'expense').map(t => `
+                const expData = allSorted.filter(t => {
+                    if(t.type !== 'expense') return false;
+                    if(expCatFilter !== 'All' && t.category !== expCatFilter) return false;
+                    if(expDateFilter && t.date !== expDateFilter) return false;
+                    return true;
+                });
+
+                listExp.innerHTML = expData.map(t => `
                     <tr class="border-b dark:border-gray-700">
                         <td class="p-3 dark:text-gray-300">${t.date}</td>
                         <td class="p-3">
@@ -846,7 +861,14 @@
             }
 
             if(listInc) {
-                listInc.innerHTML = data.filter(t => t.type === 'income').map(t => `
+                const incData = allSorted.filter(t => {
+                    if(t.type !== 'income') return false;
+                    if(incSourceFilter !== 'All' && t.source !== incSourceFilter) return false;
+                    if(incDateFilter && t.date !== incDateFilter) return false;
+                    return true;
+                });
+
+                listInc.innerHTML = incData.map(t => `
                     <tr class="border-b dark:border-gray-700">
                         <td class="p-3 dark:text-gray-300">${t.date}</td>
                         <td class="p-3 font-bold dark:text-white">${t.source}</td>
